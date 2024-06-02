@@ -1,0 +1,25 @@
+{
+    "compilerOptions": {
+        "target": "es2022",
+        "module": "es2022",
+        "moduleResolution": "node",
+        "skipLibCheck": true,
+        "allowJs": true,
+        "checkJs": false,
+        "strict": true,
+        "strictPropertyInitialization": false,
+        "rootDir": "./webapp",
+        "baseUrl": "./",
+        "paths": {
+            "rsh/watchlist/ui5/*": ["webapp/*"]
+        },
+        "composite": true,
+        "allowImportingTsExtensions":true,
+        "noEmit": true,
+    },
+    "include": ["./webapp/**/*"],
+    "typeRoots": [
+      "./node_modules/@types",
+      "./node_modules/@sapui5/types"
+    ]
+}

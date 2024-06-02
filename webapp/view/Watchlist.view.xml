@@ -1,0 +1,51 @@
+<mvc:View   xmlns="sap.m"
+            xmlns:mvc="sap.ui.core.mvc"
+			xmlns:core="sap.ui.core"
+			xmlns:f="sap.ui.layout.form"
+						xmlns:rshcontrols="rsh.watchlist.ui5.control"
+						controllerName="rsh.watchlist.ui5.controller.Watchlist"
+			height="100%"
+>
+	<Page 	title="{i18n>pageTitleWatchlist}"
+			showNavButton="true"
+			navButtonPress=".onNavBack"	
+			class= "sapUiResponsivePadding--header" >
+		<footer>
+			<Toolbar >
+				<MessageStrip
+					id="Root.MessageStrip"
+					visible="{= ${messageModel>/type} ? true : false}"
+							text="{messageModel>/text}"
+							type="{messageModel>/type}"
+							showIcon="true"
+				></MessageStrip>
+				<ToolbarSpacer/>
+				<Button icon="sap-icon://refresh" press="onRefresh"/>
+			</Toolbar>
+		</footer>
+		<content>
+		<List id="watchList"
+			  width="auto"
+			  items="{ path: 'component>/watchlist',
+						sorter: { path: 'kind', group:true }}"
+			  >
+			<items>
+				<ObjectListItem
+					intro="{component>symbol}"
+					title="{component>name}"
+					type="Navigation"
+					press="onGotoDetails"
+					number="{
+						parts: [{path: 'component>regularMarketPrice'}, {path: 'component>currency'}],
+						type: 'sap.ui.model.type.Currency',
+						formatOptions: {
+							showMeasure: true
+						}
+					}"
+				>
+				</ObjectListItem>
+			</items>
+		</List>
+		</content>
+	</Page>
+</mvc:View>

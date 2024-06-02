@@ -1,0 +1,112 @@
+<mvc:View   xmlns="sap.m"
+            xmlns:mvc="sap.ui.core.mvc"
+			xmlns:core="sap.ui.core"
+			xmlns:f="sap.ui.layout.form"
+						xmlns:rshcontrols="rsh.watchlist.ui5.control"
+						controllerName="rsh.watchlist.ui5.controller.WatchDetail"
+			height="100%"
+>
+	<Page 	title="{i18n>detailPageTitle}"
+			showNavButton="true"
+			navButtonPress=".onNavBack"	
+			class= "sapUiResponsivePadding--header" >
+		<footer>
+			<Toolbar >
+				<MessageStrip
+					id="Root.MessageStrip"
+					visible="{= ${messageModel>/type} ? true : false}"
+							text="{messageModel>/text}"
+							type="{messageModel>/type}"
+							showIcon="true"
+				>
+				</MessageStrip>
+				<ToolbarSpacer/>
+				<Button icon="sap-icon://refresh" press="onRefresh"/>
+			</Toolbar>
+		</footer>
+	<!--
+		<Label text="{component>shortName}" ></Label>
+		<ObjectHeader
+			intro="{component>quoteType}"
+			title="{component>symbol}"
+		/>
+	-->
+		<content>
+			<ObjectHeader
+				responsive="true"
+				title="{component>name}"
+				backgroundDesign="Solid"
+                number="{
+                    parts: [{path: 'component>regularMarketPrice'}, {path: 'component>currency'}],
+                    type: 'sap.ui.model.type.Currency',
+                    formatOptions: { showMeasure: true }
+                }"
+                numberUnit="{component>financialCurrency}"
+                numberState="{= ${component>regularMarketChange} &lt; 0 ? 'Error' : 'Success'}"
+				>
+				<headerContainer>
+					<HeaderContainer orientation="Horizontal"
+										backgroundDesign="Solid" >
+						<content>
+						<OverflowToolbar >
+							<Button text="{i18n>Buy}"></Button>
+							<Button text="{i18n>Unwatch}"></Button>
+						</OverflowToolbar>
+						</content>
+					</HeaderContainer>
+				</headerContainer>
+				<!-- TODO markers to mark that in watch or welth
+				<markers><ObjectMarker type="Favorite"></ObjectMarker></markers>
+					-->
+				<attributes>
+					<ObjectAttribute title="{i18n>askBid}" text="{component>ask} {component>bid}" />
+					<ObjectAttribute title="{i18n>averageDailyVolume10Day}" text="{averageDailyVolume10Day}" />
+				</attributes>
+				<statuses>
+					<ObjectStatus title="{i18n>Symbol} / {i18n>Type}" text="{component>symbol} / {component>kind}" state="Success" />
+				</statuses>
+			</ObjectHeader>
+			<IconTabBar
+				expanded="{device>/isNoPhone}"
+				class="sapUiSmallMarginBottom sapUiResponsiveContentPadding">
+				<items>
+					<IconTabFilter
+						key="info"
+						text="{i18n>Info}">
+						<f:SimpleForm
+							layout="ResponsiveGridLayout" >
+							<f:title>
+								<core:Title text="A Form" />
+							</f:title>
+							<Label text="Label"/>
+							<Text text="Value"/>
+						</f:SimpleForm>
+					</IconTabFilter>
+					<IconTabFilter
+						key="attachments"
+						text="Attachments">
+						<List headerText="A List" showSeparators="Inner" >
+						</List>
+					</IconTabFilter>
+					<IconTabFilter
+						key="notes"
+						text="Notes">
+						<FeedInput />
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+			<f:SimpleForm
+				layout="ResponsiveGridLayout"
+				class="sapUiForceWidthAuto sapUiResponsiveMargin" >
+				<f:title>
+					<core:Title text="A Form" />
+				</f:title>
+				<Label text="Label"/>
+				<Text text="Value"/>
+			</f:SimpleForm>
+			<List headerText="A List" backgroundDesign="Translucent" width="auto" class="sapUiResponsiveMargin"/>
+			<Table headerText="A Table" width="auto" class="sapUiResponsiveMargin"/>
+			<Panel headerText="A Panel" width="auto" class="sapUiResponsiveMargin"/>
+		</content>
+	</Page>
+</mvc:View>

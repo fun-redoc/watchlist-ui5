@@ -1,0 +1,56 @@
+<mvc:View   xmlns="sap.m"
+            xmlns:mvc="sap.ui.core.mvc"
+			xmlns:core="sap.ui.core"
+			xmlns:f="sap.ui.layout.form"
+						xmlns:rshcontrols="rsh.watchlist.ui5.control"
+						controllerName="rsh.watchlist.ui5.controller.Transactions"
+			height="100%"
+>
+				<!--
+				growing="true"
+				growingThreshold="5"
+				growingScrollToLoad="true"
+				growingTriggerText="{i18n>fetchMoreTransactions}"
+				-->
+	<Page 	title="{i18n>TransactionsPageTitle}"
+			showNavButton="true"
+			navButtonPress=".onNavBack"	
+			class= "sapUiResponsivePadding--header" >
+		<content>
+			<List id="transactionList"
+				headerText="{i18n>TransactionsListTitle}"
+				class="sapUiResponsiveMargin"
+				width="auto"
+				items="{ path: 'transactions>/TransactionSet',
+						sorter: { path: 'Symbol', group:true }}" >
+					<headerToolbar>
+					<Toolbar>
+						<Title text="{i18n>TransactionsListTitle}"/>
+						<ToolbarSpacer/>
+						<SearchField width="50%" search="onFilter" selectOnFocus="false"/>
+					</Toolbar>
+					</headerToolbar>
+				<items>
+					<ObjectListItem
+						title="{transactions>Symbol} x {transactions>Amount}"
+						number="{
+							parts: [{path: 'transactions>Price'}, {path: 'transactions>Cuky'}],
+							type: 'sap.ui.model.type.Currency',
+							formatOptions: {
+								showMeasure: false
+							}
+						}"
+						numberUnit="{transactions>/Cuky}"
+						numberState="{= ${transactions>Price} > 50 ? 'Error' : 'Success' }"
+						type="Navigation"
+						press="onPress"
+					>
+						<firstStatus>
+							<ObjectStatus text="{ path: 'transactions>Kind', formatter: '.formatKind' }"/>
+						</firstStatus>
+					</ObjectListItem>
+				</items>
+			</List>
+		</content>
+	</Page>
+</mvc:View>

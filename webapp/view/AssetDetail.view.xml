@@ -1,0 +1,105 @@
+<mvc:View   xmlns="sap.m"
+            xmlns:mvc="sap.ui.core.mvc"
+			xmlns:core="sap.ui.core"
+			xmlns:f="sap.ui.layout.form"
+			xmlns:rshcontrols="rsh.watchlist.ui5.controls"
+			controllerName="rsh.watchlist.ui5.controller.AssetDetail"
+			height="100%"
+>
+	<Page 	title="{i18n>detailPageTitle}"
+			showNavButton="true"
+			navButtonPress=".onNavBack"	
+			class= "sapUiResponsivePadding--header" >
+		<footer>
+			<Toolbar >
+				<MessageStrip
+					id="Root.MessageStrip"
+					visible="{= ${messageModel>/type} ? true : false}"
+							text="{messageModel>/text}"
+							type="{messageModel>/type}"
+							showIcon="true"
+				></MessageStrip>
+			</Toolbar>
+		</footer>
+	<!--
+		<Label text="{yFinSearchResult>shortName}" ></Label>
+		<ObjectHeader
+			intro="{yFinSearchResult>quoteType}"
+			title="{yFinSearchResult>symbol}"
+		/>
+	-->
+		<content>
+			<ObjectHeader
+				condensed="true"
+				fullScreenOptimized="true"
+				responsive="true"
+				title="{yFinSearchResult>longName}"
+				backgroundDesign="Solid"
+                number="{
+                    parts: [{path: 'yFinSearchResult>regularMarketPrice'}, {path: 'yFinSearchResult>currency'}],
+                    type: 'sap.ui.model.type.Currency',
+                    formatOptions: { showMeasure: false }
+                }"
+                numberUnit="{yFinSearchResult>currency}"
+                numberState="{= ${yFinSearchResult>regularMarketChange} &lt; 0 ? 'Error' : 'Success'}"
+				>
+				<headerContainer>
+					<HeaderContainer orientation="Horizontal"
+										backgroundDesign="Solid" >
+						<content>
+							<OverflowToolbar >
+								<Button text="Buy"></Button>
+								<Button text="Sell"></Button>
+								<Button id="btnWatch" text="Watch" press="onWatch"></Button>
+							</OverflowToolbar>
+						</content>
+					</HeaderContainer>
+				</headerContainer>
+				<!-- TODO markers to mark that in watch or welth
+				<markers><ObjectMarker type="Favorite"></ObjectMarker></markers>
+					-->
+				<attributes>
+					<ObjectAttribute title="{i18n>marketTime}"
+						text="{
+						parts: [
+							{path: 'yFinSearchResult>regularMarketTime'},
+							{path: 'yFinSearchResult>gmtOffSetMilliseconds'}
+						],
+						formatter: '.formatter.formatTime'
+						}"/>
+					<ObjectAttribute title="{i18n>askBid}" text="{yFinSearchResult>ask} {yFinSearchResult>bid}" />
+					<ObjectAttribute title="{i18n>averageDailyVolume10Day}" text="{averageDailyVolume10Day}" />
+				</attributes>
+				<statuses>
+					<ObjectStatus title="{i18n>Symbol} / {i18n>Type}" text="{yFinSearchResult>symbol} / {yFinSearchResult>quoteType}" state="Success" />
+				</statuses>
+			</ObjectHeader>
+			<IconTabBar
+				expanded="{device>/isNoPhone}"
+				class="sapUiSmallMarginBottom sapUiResponsiveContentPadding">
+				<items>
+					<IconTabFilter
+						key="info"
+						text="{i18n>Info}">
+						<Panel headerText="{i18n>Chart}" 
+							width="auto" height="auto" 
+							class="sapUiResponsiveMargin"
+							>
+							<content>
+								<rshcontrols:D3View 
+									width="100%"
+									height="300px"
+									data="{chart>/}"></rshcontrols:D3View>
+							</content>
+						</Panel>
+					</IconTabFilter>
+					<IconTabFilter
+						key="allData"
+						text="{i18n>AllData}">
+						<Table headerText="A Table" width="auto" class="sapUiResponsiveMargin"/>
+					</IconTabFilter>
+				</items>
+			</IconTabBar>
+		</content>
+	</Page>
+</mvc:View>

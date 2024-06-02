@@ -1,0 +1,94 @@
+sap.ui.define([
+  "jquery.sap.global",
+  "sap/ui/core/Control",
+  "sap/ui/core/HTML",
+  "sap/ui/core/ResizeHandler",
+  "sap/ui/core/mvc/OverrideExecution"
+], function(jquery, Control, HTML, ResizeHandler, OverrideExecution) {
+  "use strict";
+  
+  const D3ViewBase = Control.extend("rsh.controls.D3ViewBase", {
+    metadata: {
+      methods: { // Interface from the perspective of the extension:
+        "draw": {
+          public: true,
+          final: false, // default
+          abstract:true,
+          overrideExecution: OverrideExecution.Instead, // default
+        }
+      },      
+      aggregations: {
+        // prerendered hidden content, rendering svg on each renderer call is to expensive
+        // idea: ui5 renders only the svg tag
+        //       after ui5 rendering, svg is generated from d3
+        //       browser rendering run then on the complete svg
+        _svg: {
+          type: "sap.ui.core.HTML",
+          multiple:false,
+          visibility:"hidden"
+        },
+        /*
+        items : {
+          type: "sap.ui.base.ManagedObject",
+          multiple:true,
+          singularName:"item"
+        }
+        */
+      },
+      /*
+      defaultAggregation:"items",
+      */
+      properties: {
+        data:"object"
+      }
+    },
+
+    draw : function(width, height, data) {},
+
+    _onResize: function() {
+      const height = this.$().height();
+      const width = this.$().width();
+      console.log(`D3ViewBase:onResize ${width}x${height}`);
+
+      const data = this.getData()
+      this.draw(width, height, data);
+    },
+
+    init: function() {
+      Control.prototype.init.apply(this,arguments);
+      console.log("D3ViewBase:init")
+      this._svgId = this.getId() + "-svg";
+      this.setAggregation("_svg",
+        new HTML({
+          content: `<svg id="${this._svgId}"></svg>`
+        })
+      )
+      this._resizeHandler = ResizeHandler.register(this, this._onResize.bind(this));
+    },
+
+    exit: function() {
+      Control.prototype.exit.apply(this, arguments);
+      console.log("D3ViewBase:exit")
+      ResizeHandler.deregister(this._resizeHandler);
+    },
+
+    onAfterRendering: function() {
+      Control.prototype.onAfterRendering.apply(this,arguments)
+      console.log("D3ViewBase:onAfterRendering")
+      this._onResize()
+    },
+
+    renderer: {
+      apiVersion:2,
+      render : (renderManager, control) => {
+        console.log("D3ViewBase:render")
+        renderManager.openStart('div', control);
+        renderManager.openEnd();
+        renderManager.renderControl(control.getAggregation("_svg"))
+        renderManager.close('div');
+      }
+    }
+  });
+
+  return D3ViewBase; 
+});

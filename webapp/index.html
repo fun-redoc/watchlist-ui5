@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta charset="utf-8">
+
+		<title>Watchlist</title>
+		<script src="http://d3js.org/d3.v4.min.js"></script>
+		<script
+			id="sap-ui-bootstrap"
+			src="https://openui5.hana.ondemand.com/resources/sap-ui-core.js"
+			data-sap-ui-theme="sap_bluecristal"
+			data-sap-ui-libs="sap.m"
+			data-sap-ui-bindingSyntax="complex"
+			data-sap-ui-compatVersion="edge"
+			data-sap-ui-preload="async"
+			data-sap-ui-async="true"
+			data-sap-ui-xx-waitForTheme="true"
+			data-sap-ui-log-level = "DEBUG"
+			data-sap-ui-resourceroots='{
+				"rsh.watchlist.ui5": "../"
+			}'>
+		</script>
+		<script>
+			sap.ui.getCore().attachInit(function () {
+				sap.ui.require([
+					"sap/m/Shell",
+					"sap/ui/core/ComponentContainer",
+					"rsh/watchlist/ui5/Component"
+				], function ( Shell, ComponentContainer, Component) {
+					sap.ui.core.Component.create({
+						name: 'rsh.watchlist.ui5',
+						async : true
+					}).then(function(oComponent){
+						new Shell({
+							app : new ComponentContainer({
+								async: true,
+								component:oComponent // for some reason the File containing the Component has to be Component.js...???
+							})
+						}).placeAt("content");
+					}).catch(function (oError) {
+						console.error("Error during component creation:", oError);
+					})});
+			});
+		</script>
+	</head>
+	<body class="sapUiBody" id="content">
+	</body>
+</html>
