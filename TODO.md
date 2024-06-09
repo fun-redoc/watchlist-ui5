@@ -11,6 +11,8 @@
 + in some places I use throw new Error on not recoverable errors, provide a generic method to catch them an show information to the user with option to restart the app
 + API not immidiatelly active afeter save in settings (tested with Firefox)
 + sometimes JSON models do not fire change events when used on views, use ManagedObjectModels instead? alternativelly store models in appController
+      // TODO proper input error hadling needed instead setting defaults
+      // TODO try to use typescrtipt enums instead of sap enums managed object for type savety
 
 ### Done
 - provide plkr showcase and check into github

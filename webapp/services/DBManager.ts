@@ -16,7 +16,7 @@ export interface DBManager<T extends TProvideNumericID> {
   update: (note:T) => Promise<boolean>
   del:(id:number) => Promise<boolean>
   get: (id:number) => Promise<T>
-  list: () => Promise<T[]>
+  list: (indexName?:string, value?:string) => Promise<T[]>
   clearAll: () => Promise<void>
   accessDBStore:() => Promise<IDBObjectStore>
 }
@@ -183,14 +183,17 @@ export async function  mkDBManager<T extends TProvideNumericID>(dbName:string, s
     })
   }
 
-  async function list():Promise<T[]> {
+  async function list(indexName?:string, value?:string ):Promise<T[]> {
     return new Promise<T[]>((resolve, reject)=>{
       if(!db) {return reject(new Error("DB not initialized"))}
       // Start a transaction and get the object store
       const transaction = db.transaction([storeName], "readonly")
-      const store = transaction.objectStore(storeName)
+      const store = !indexName ? transaction.objectStore(storeName)
+                               :transaction.objectStore(storeName).index(indexName)
+
       // Get the data object by its key
-      const cursorRequest = store.openCursor()
+      const cursorRequest = !value ? store.openCursor()
+                                   : store.openCursor(value)
       cursorRequest.onerror = () => {
         // Error callback
         console.error("Data error: " + cursorRequest.error)

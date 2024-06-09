@@ -1,8 +1,8 @@
 import UIComponent from "sap/ui/core/UIComponent";
 import { DBManager, mkDBManager } from "./services/DBManager";
-import ManagedObjectModel from "sap/ui/model/base/ManagedObjectModel";
 import WatchStock from "./types/Watch";
 import ManagedObject from "sap/ui/base/ManagedObject";
+import ManagedObjectModel from "sap/ui/model/base/ManagedObjectModel";
 import { MetadataOptions as ComponentMetadataOptions } from "sap/ui/core/Component";
 import MOWatchStock from "./managedobject/MOWatchStock"
 import ResourceBundle from "sap/base/i18n/ResourceBundle";

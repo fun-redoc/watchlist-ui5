@@ -1,0 +1,165 @@
+<mvc:View xmlns:calendar="sap.ui.unified.calendar" xmlns:cards="sap.f.cards" xmlns:layout="sap.ui.layout"
+          xmlns="sap.m"
+          xmlns:mvc="sap.ui.core.mvc"
+          xmlns:core="sap.ui.core"
+			    controllerName="rsh.watchlist.ui5.controller.TransactionBuy"
+>
+	<Page 	title="{i18n>transactionBuyPageTitle}"
+			showNavButton="true"
+			navButtonPress=".onNavBack"	
+	>
+  <headerContent>
+  </headerContent>
+  <content>
+    <ObjectHeader 
+        title="{yFinQuoteResult>/symbol}"
+        number="{
+          parts:[{path:'yFinQuoteResult>/regularMarketPrice'},{path:'yFinQuoteResult>/currency'}],
+          type: 'sap.ui.model.type.Currency',
+          formatOptions: {showMeasure: false}
+        }"
+        numberUnit="{yFinQuoteResult>/currency}"
+      class="sapUiResponsivePadding--header" 
+      >
+		<statuses>
+			<ObjectStatus
+				text="Some Damaged"
+				state="Error" />
+			<ObjectStatus
+				text="In Stock"
+				state="Success" />
+		</statuses>
+		<ObjectAttribute text="{yFinQuoteResult>/currency} {yFinQuoteResult>/currency}" />
+		<ObjectAttribute text="{yFinQuoteResult>/currency} x {yFinQuoteResult>/currency} x {yFinQuoteResult>/currency} {yFinQuoteResult>/currency}" />
+		<ObjectAttribute text="{yFinQuoteResult>/currency}" />
+		<ObjectAttribute text="https://finance.yahoo.com/quote/{yFinQuoteResult>/symbol}/"
+                     active="true" 
+                     press="handleLinkObjectAttributePress" />
+    </ObjectHeader>
+	<Table id="transactionTable"
+		inset="false"
+		items="{
+			path: 'transactions>/transactions/',
+			sorter: {
+        descending: true,
+        comparator: '.dateComparator',
+				path: 'transactions>Date'
+			}
+		}">
+		<headerToolbar>
+			<OverflowToolbar>
+				<content>
+					<Title text="{newTransaction>/symbol}" level="H2"/>
+					<ToolbarSpacer />
+          <SegmentedButton selectedKey="all" selectionChange=".onFilter" class="sapMSegmentedButtonNoAutoWidth">
+            <items>
+              <SegmentedButtonItem text="{i18n>LABEL_ALL}" key="all"/>
+              <SegmentedButtonItem text="{i18n>LABEL_BUY}" key="buy"/>
+              <SegmentedButtonItem text="{i18n>LABEL_SELL}" key="sell"/>
+            </items>
+          </SegmentedButton>
+          </content>
+			</OverflowToolbar>
+		</headerToolbar>
+		<infoToolbar>
+			<Toolbar>
+        <DateTimePicker value="{
+          path: 'newTransaction>/Date',
+          type: 'sap.ui.model.type.DateTime',
+          formatOptions: {
+            style:'medium'}
+        }"/>
+        <Input id="addBuyAmount" value="{newTransaction>/Amount}" placeholder="{i18n>Amount}" change=".changeTransaction" />
+        <Input id="addBuyPrice" value="{newTransaction>/Price}" placeholder="{i18n>Price}" change=".changeTransaction" />
+        <Input id="addBuyCurrency" value="{newTransaction>/Currency}" placeholder="{i18n>Currency}" change=".changeTransaction" />
+        <Input id="addBuyFee" value="{newTransaction>/Fee}" placeholder="{i18n>Fee}" change=".changeTransaction" />
+        <ToolbarSpacer />
+        <Button text="{i18n>Buy}" enabled="{appearance>/canBuy}" press=".onBuy"></Button>
+        <Button enabled="{appearance>/canSell}" text="{i18n>Sell}" press=".onSell"/>
+			</Toolbar>
+		</infoToolbar>
+		<columns>
+			<Column >
+				<Text text="Buy/Sell" />
+			</Column>
+			<Column hAlign="Center">
+				<Text text="Date" />
+			</Column>
+			<Column hAlign="Center">
+				<Text text="Amount" />
+			</Column>
+			<Column hAlign="Center">
+				<Text text="Price" />
+			</Column>
+			<Column hAlign="Center">
+				<Text text="Fee" />
+			</Column>
+			<Column hAlign="Center">
+			</Column>
+		</columns>
+		<items>
+			<ColumnListItem vAlign="Middle">
+				<cells>
+          <Text text="{transactions>Transaction}" />
+					<ObjectIdentifier
+						title="{
+              path:'transactions>Date',
+              type: 'sap.ui.model.type.DateTime',
+              formatOptions: {
+                pattern: 'yyyy.MM.dd HH:mm',
+                style:'medium'
+              }
+            }"
+						/>
+					<ObjectNumber
+							number="{
+								parts:[{path:'transactions>Amount'}],
+								type: 'sap.ui.model.type.Integer',
+								formatOptions: {showMeasure: false}
+							}"
+							/>
+					<ObjectNumber
+							number="{
+								parts:[{path:'transactions>Price'},{path:'transactions>Currency'}],
+								type: 'sap.ui.model.type.Currency',
+								formatOptions: {showMeasure: false}
+							}"
+							unit="{transactions>Currency}" />
+					<ObjectNumber
+							number="{
+								parts:[{path:'transactions>Fee'},{path:'transactions>Currency'}],
+								type: 'sap.ui.model.type.Currency',
+								formatOptions: {showMeasure: false}
+							}"
+							unit="{transactions>Currency}" />
+          <Button text="{i18n>Delete}" icon="sap-icon://delete" press="onDelete"/>
+				</cells>
+			</ColumnListItem>
+		</items>
+	</Table>
+
+  </content>
+  <footer>
+    <OverflowToolbar>
+      <MessageStrip
+        id="Root.MessageStrip"
+        visible="{= ${messageModel>/type} ? true : false}"
+				text="{messageModel>/text}"
+				type="{messageModel>/type}"
+				showIcon="true"
+      >
+			</MessageStrip>
+      <ToolbarSpacer/>
+      <SegmentedButton  selectedKey="all" selectionChange=".onFilter" class="sapMSegmentedButtonNoAutoWidth">
+        <items>
+          <SegmentedButtonItem text="{i18n>LABEL_ALL}" key="all"/>
+          <SegmentedButtonItem text="{i18n>LABEL_BUY}" key="buy"/>
+          <SegmentedButtonItem text="{i18n>LABEL_SELL}" key="sell"/>
+        </items>
+      </SegmentedButton>
+      <ToolbarSpacer/>
+      <OverflowToolbarButton icon="sap-icon://cancel" text="{i18n>cancel}" press="onCancel" />
+    </OverflowToolbar>
+  </footer>
+	</Page>
+</mvc:View>

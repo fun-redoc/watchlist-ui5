@@ -7,6 +7,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { Button$PressEvent } from "sap/m/Button";
 import MessageType from "sap/ui/core/message/MessageType";
 import BindingMode from "sap/ui/model/BindingMode";
+import encodeURLParameters from "sap/base/security/encodeURLParameters";
+import encodeJS from "sap/base/security/encodeJS";
 
 interface MessageModel {
     text?:string
@@ -18,7 +20,7 @@ interface MessageModel {
  */
 export default class BaseController extends Controller {
     private  i18nResourceBundle:Promise<ResourceBundle> | ResourceBundle
-    private static TIME_TO_SHOW_MESSAGE_MILLIS = 3000;
+    protected static TIME_TO_SHOW_MESSAGE_MILLIS = 3000;
     protected appComponent: AppComponent
 
     protected async getI18nResourceBundle():Promise<ResourceBundle | undefined> {
@@ -92,12 +94,12 @@ export default class BaseController extends Controller {
             console.log("onTransactions pressed")
             this.onNavigate("transactions", e)
         }
-        public async onNavigate(page:string, e:Button$PressEvent) {
+        public async onNavigate(page:string, e?:Button$PressEvent, params?:Record<string,string|number|boolean>) {
             console.log("BaseController:onNavigate")
             const ownerComponent = this.getOwnerComponent() as AppComponent
             const router = ownerComponent.getRouter()
             if(router) {
-                router.navTo(page)
+                router.navTo(page, params)
             } else {
                 this.showErrorMessage((await this.getI18nResourceBundle())?.getText("genericUserErrorMessage"))
                 throw new Error("no router found in owner component.")

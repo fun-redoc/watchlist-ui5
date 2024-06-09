@@ -152,6 +152,16 @@
                     "target": "assetdetail"
                 },            
                 {
+                    "pattern": "transactionBuy/{symbol}",
+                    "name": "transactionBuy",
+                    "target": "transactionBuy"
+                },            
+                {
+                    "pattern": "transactionSell/{symbol}",
+                    "name": "transactionSell",
+                    "target": "transactionSell"
+                },            
+                {
                     "pattern": "transactions",
                     "name": "transactions",
                     "target": "transactions"
@@ -183,6 +193,12 @@
                 },           
                 "transactions": {
                     "viewName": "Transactions"
+                },
+                "transactionBuy": {
+                    "viewName": "TransactionBuy"
+                },
+                "transactionSell": {
+                    "viewName": "TransactionSell"
                 }
             }
         },

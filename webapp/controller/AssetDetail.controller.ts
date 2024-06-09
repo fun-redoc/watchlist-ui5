@@ -13,6 +13,7 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { api_getChart } from "../services/yFinApiService";
 import Log from "sap/base/Log";
 import useCache from "../services/cacheService";
+import { Button$PressEvent } from "sap/m/Button";
 
 interface RoutParams {
     assetIdx:string
@@ -22,6 +23,7 @@ interface RoutParams {
  */
 export default class AssetDetail extends BaseController {
     public formatter = formatter(this.getOwnerComponent()?.getModel("i18n") as ResourceModel)
+
     public onInit() {
             super.onInit()
             const router = (this.getOwnerComponent() as AppComponent).getRouter()
@@ -38,7 +40,94 @@ export default class AssetDetail extends BaseController {
             //this.getView()?.setModel(new JSONModel({}), "chart") // here we still dont know which chart, but we have to set the model to get rid of errror message
             route?.attachPatternMatched(this._onObjectMatched, this)
 		}
+
+
+        public onNavBack() {
+			const oHistory = History.getInstance();
+			const sPreviousHash = oHistory.getPreviousHash();
+
+			if (sPreviousHash !== undefined) {
+				window.history.go(-1);
+			} else {
+				const oRouter = (this.getOwnerComponent() as AppComponent).getRouter()
+				oRouter.navTo("root",undefined, true);
+			}
+		}
+
+        private _getBoundOubjectFromModel():YFinQuoteResult|undefined {
+            const binding = this.getView()?.getElementBinding("yFinSearchResult")
+            const path = binding?.getPath()
+            const object:YFinQuoteResult|undefined = binding?.getModel()?.getObject(path || "") as YFinQuoteResult|undefined
+            return object
+        }
+        public onBuy(e:Button$PressEvent) {
+            const object = this._getBoundOubjectFromModel()
+            console.log("onBuy", object)
+            if(object) {
+                this.onNavigate("transactionBuy", e, {symbol:object.symbol})
+            } else {
+                this.getI18nResourceBundle()
+                    .then(rb => 
+                        MessageToast.show(rb?.getText("genericUserErrorMessage") || "An error happened, try again later")
+                    )
+            }
+        }
+
+        public onSell(e:Button$PressEvent) {
+            const object = this._getBoundOubjectFromModel()
+            console.log("onBuy", object)
+            if(object) {
+                this.onNavigate("transactionSell", e, {symbol:object.symbol})
+            } else {
+                this.getI18nResourceBundle()
+                    .then(rb => 
+                        MessageToast.show(rb?.getText("genericUserErrorMessage") || "An error happened, try again later")
+                    )
+            }
+        }
+
+        public onWatch(oControlEvent:Event) {
+            //const binding = this.getView()?.getElementBinding("yFinSearchResult")
+            //const path = binding?.getPath()
+            //const object:YFinQuoteResult|undefined = binding?.getModel()?.getObject(path || "") as YFinQuoteResult|undefined
+            //console.log("onWatch", path, object)
+            const object = this._getBoundOubjectFromModel()
+            console.log("onWatch", object)
+            if(object) {
+                const watch:WatchStock = {
+                    symbol:object.symbol,
+                    name:object.shortName,
+                    kind:object.quoteType,
+                    watchSince:UI5Date.getInstance()
+                }
+                this.appComponent.addToWatch(watch)
+                    .then(_ => {
+                        this.getI18nResourceBundle()
+                        .then(resourceBundle => {
+                            const message = resourceBundle?.getText("stockAddedToWatchlist") || "stock added to watchlist."
+                            MessageToast.show(message)
+                        })
+                    })
+                    .catch(reason => {
+                        console.error(reason)
+                        this.getI18nResourceBundle()
+                        .then(resourceBundle => {
+                            const message = resourceBundle?.getText("genericUserErrorMessage")
+                            this.showErrorMessage(message)
+                        })
+                    })
+            } else {
+                console.error("nothing to store, selected object is undefined.")
+                //MessageBox.error("{i18n>genericUserErrorMessage}")
+                this.getI18nResourceBundle()
+                .then(resourceBundle => {
+                    const message = resourceBundle?.getText("genericUserErrorMessage")
+                    this.showErrorMessage(message)
+                })
+            }
+        }
         private _getChartWithCache = useCache<YFinChartResult, typeof api_getChart>(api_getChart, {timeOutMillis:60*60*1000});
+
 		private _onObjectMatched(oEvent:Route$PatternMatchedEvent):void {
             console.log("in on Object matched")
 			const view = this.getView()
@@ -93,56 +182,4 @@ export default class AssetDetail extends BaseController {
                 throw new Error("somtething wnt wrong. try again later.")
             }
 		}
-        public onNavBack() {
-			const oHistory = History.getInstance();
-			const sPreviousHash = oHistory.getPreviousHash();
-
-			if (sPreviousHash !== undefined) {
-				window.history.go(-1);
-			} else {
-				const oRouter = (this.getOwnerComponent() as AppComponent).getRouter()
-				oRouter.navTo("root",undefined, true);
-			}
-		}
-        public onWatch(oControlEvent:Event) {
-            const binding = this.getView()?.getElementBinding("yFinSearchResult")
-            const path = binding?.getPath()
-            const object:YFinQuoteResult|undefined = binding?.getModel()?.getObject(path || "") as YFinQuoteResult|undefined
-            console.log("onWatch", path, object)
-            if(object) {
-                const watch:WatchStock = {
-                    symbol:object.symbol,
-                    name:object.shortName,
-                    watchSince:UI5Date.getInstance()
-                }
-                this.appComponent.addToWatch(watch)
-//                this.appComponent.getWatchDBM()
-//                    .then(dbManager => {
-//                        return dbManager.add(watch)
-//                    })
-                    .then(_ => {
-                        this.getI18nResourceBundle()
-                        .then(resourceBundle => {
-                            const message = resourceBundle?.getText("stockAddedToWatchlist") || "stock added to watchlist."
-                            MessageToast.show(message)
-                        })
-                    })
-                    .catch(reason => {
-                        console.error(reason)
-                        this.getI18nResourceBundle()
-                        .then(resourceBundle => {
-                            const message = resourceBundle?.getText("genericUserErrorMessage")
-                            this.showErrorMessage(message)
-                        })
-                    })
-            } else {
-                console.error("nothing to store, selected object is undefined.")
-                //MessageBox.error("{i18n>genericUserErrorMessage}")
-                this.getI18nResourceBundle()
-                .then(resourceBundle => {
-                    const message = resourceBundle?.getText("genericUserErrorMessage")
-                    this.showErrorMessage(message)
-                })
-            }
-        }
 }

@@ -48,9 +48,9 @@
 										backgroundDesign="Solid" >
 						<content>
 							<OverflowToolbar >
-								<Button text="Buy"></Button>
-								<Button text="Sell"></Button>
-								<Button id="btnWatch" text="Watch" press="onWatch"></Button>
+								<Button id="btnBuy" text="{i18n>Buy}" press="onBuy"></Button>
+								<Button text="{i18n>Sell}" press="onSell"></Button>
+								<Button id="btnWatch" text="{i18n>Watch}" press="onWatch"></Button>
 							</OverflowToolbar>
 						</content>
 					</HeaderContainer>
