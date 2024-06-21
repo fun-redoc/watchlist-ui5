@@ -4,6 +4,7 @@
 + AssetDetail: make Chartparams customizable via menu
 
 ### TODO - Debt
++ transition to Transaction(Buy) - the newly selected symbol and data apears with delay (when reloading from yfin), the old data/symbol is shown...better, nothing is shown and a "loading..." indicator
 + D3View(Base) the height in onArfterRendering is not calculated corectly (set to 0) on hight=100%
 + use AbortController on every api_ and setTimeout, setIntervale etc. call
 + Settings.controller onSave validate imput (length !== 0)

@@ -6,9 +6,8 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 import { Input$SubmitEvent } from "sap/m/Input";
 import { Button$PressEvent } from "sap/m/Button";
-import Log from "sap/base/Log";
-import { YFinAutocompleteResult, YFinQuoteResponse, YFinQuoteResult } from "../types/yFinApiTypes";
-import api_request, { QueryParam, fetchYFinQuery } from "../services/yFinApiService";
+import { YFinQuoteResult } from "../types/yFinApiTypes";
+import { QueryParam, fetchYFinQuery } from "../services/yFinApiService";
 import useCache from "../services/cacheService";
 import MessageType from "sap/ui/core/message/MessageType";
 import BindingMode from "sap/ui/model/BindingMode";
@@ -20,60 +19,6 @@ interface MessageModel {
     type:MessageType|undefined
 }
 
-//interface QueryParam {
-//    query:string
-//}
-//
-//function fetchYFinQuery(apiKey:string, {query}:QueryParam, abortController?:AbortController): Promise<YFinQuoteResult[]> {
-//    console.log("fetchYFinQuery")
-//    const uri = `v6/finance/autocomplete?region=DE&lang=de&query=${query}`;
-//    return api_request<any>(apiKey, uri, abortController)
-//        .then(response => {
-//            console.log("response received")
-//            const autocompl:YFinAutocompleteResult[] = response["ResultSet"]["Result"] 
-//            const maxBatch = 10 // defined by the api: https://financeapi.net/yh-finance-api-specification.json
-//            let [batches, rest] = autocompl.reduce((acc, a, i) => {
-//                if(i !== 0 && i % maxBatch === 0) {
-//                    return [acc[0].concat(acc[1]), []]
-//                } else {
-//                    return [acc[0], acc[1].concat([a.symbol])]
-//                }
-//            }, [[],[]] as [string[][], string[]])
-//            if(rest.length > 0) {
-//                batches.push(rest)
-//            }
-//            console.log("[- batches --")
-//            console.log(JSON.stringify(batches))
-//            console.log("-- batches -]")
-//            const batchPromisses = batches.map(batch => {
-//                const symbols=batch.join(',')
-//                const uri = `v6/finance/quote?region=DE&lang=de&symbols=${encodeURIComponent(symbols)}`;
-//                // eslint-disable-next-line @typescript-eslint/no-explicit-any
-//                return api_request<YFinQuoteResponse>(apiKey, uri, abortController)
-//                        .then(response => response["quoteResponse"]["result"])
-//            })
-//            const res = Promise.all(
-//                 batchPromisses.flatMap(async (s) => {
-//                    return new Promise<YFinQuoteResult[]>((resolve, reject) => {
-//                        return s.then(
-//                            (success) => resolve(success),
-//                            (fail) => {
-//                                abortController?.abort()
-//                                reject(fail)
-//                            }
-//                        )
-//                })})
-//            ).then(result => {
-//                const res = result.flatMap(r => r)
-//                return res
-//            })
-//            return res
-//        })
-//        .catch(reason => {
-//            Log.error(reason)
-//            throw new Error(reason)
-//        })
-//}
 
 /**
  * @namespace rsh.watchlist.ui5.controller

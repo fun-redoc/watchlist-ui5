@@ -16,6 +16,11 @@ export const DB_STORE_WATCHLIST = "watchlistUI5Store"
 export const DB_VERSION_WATCHLIST = 2 
 
 
+type Symbol = string
+type YFinPoolFilter = "watch" | "wealth"
+interface YFinPoolEntry extends YFinQuoteResult {
+	filter:YFinPoolFilter[]
+}
 
 /**
  * @namespace rsh.watchlist.ui5
@@ -37,6 +42,7 @@ export default class AppComponent extends UIComponent {
 	private apiKey:string|null
 	private dbm:Promise<DBManager<WatchStock>>
     private  i18nResourceBundle:Promise<ResourceBundle> | ResourceBundle
+	private yFinPool :Promise<Record<Symbol,YFinPoolEntry>> = new Promise(resolve => resolve({}))
 
     protected async getI18nResourceBundle():Promise<ResourceBundle | undefined> {
         if(this.i18nResourceBundle) return this.i18nResourceBundle
@@ -47,12 +53,6 @@ export default class AppComponent extends UIComponent {
 
 	public async init()  {
 		super.init();
-		// set data model, if a component model is needed.
-        //const oData = { recipient : { name : "World and Universe." },
-								//				list: ["Element 1", "Element 2", "Element 3", "Element 4"]
-								//			 } as Recipient
-        //const oModel = new JSONModel(oData);
-        //this.setModel(oModel);
 		this.setModel(new ManagedObjectModel(this), "component")
 		this.getModel("component")?.setDefaultBindingMode("TwoWay") // TODO?? is this correct??
 
@@ -117,6 +117,68 @@ export default class AppComponent extends UIComponent {
 			return new Promise((_,reject) => reject(err))
 		}
     }
+	public async addToYFinPool(symbol:Symbol[], filter:YFinPoolFilter): Promise<void> {
+		const newYFP = this.yFinPool
+			.then(yfp => {
+				symbol.forEach(s => {
+					if(s) {
+						if(!yfp[s]) {
+							// symbol not yet in pool
+							yfp[s] = {filter:[filter]} as YFinPoolEntry
+						} else {
+							if(!yfp[s].filter) {
+								yfp[s] = {filter:[filter]} as YFinPoolEntry
+							} else {
+								// symbol already in pool, only adjust usage filter
+								yfp[s].filter.push(filter)
+							}
+						}
+					}
+				})
+				return yfp
+			})
+		this.yFinPool = newYFP
+		await this.refreshYFinPool()
+	}
+
+	public getYFinPool() {
+		return this.yFinPool
+	}
+
+	public  async refreshYFinPool():Promise<void> {
+		if(!this.apiKey) { return }
+		const yfp = await this.yFinPool
+		const symbolsToFetch = Object.keys(yfp)
+		// retain filters
+		const filters = Object.values(yfp).reduce((acc, o) => {
+			acc[o.symbol] = o.filter
+			return acc
+		}, {} as Record<Symbol, YFinPoolFilter[]>)
+		console.log("symbolsToFetch=", symbolsToFetch)
+		const yFinQuoteResults = await this.fetchFromYFin(symbolsToFetch)
+		const newYfp = yFinQuoteResults.reduce((acc, r) => {
+			acc[r.symbol] = {...r, filter:filters[r.symbol]} // update and restore retained filter
+			return acc
+		}, {} as typeof yfp)
+		this.yFinPool = new Promise(resolve => resolve(newYfp))
+	}
+
+	private async fetchFromYFin(symbolsToFetch:Symbol[]) : Promise<YFinQuoteResult[]> {
+		if(!this.apiKey) { return [] }
+		const fetchBatchApi = api_getAssetBatch(this.apiKey)
+		const fetchBatchApiFn = fetchBatchApi.fetchBatch
+		const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:1000*60*5})
+		let result:YFinQuoteResult[] = []
+		for(var start = 0; start < symbolsToFetch.length; ) {
+			const bachEnd = Math.min(symbolsToFetch.length, start+fetchBatchApi.MAX_BATCH_SIZE)
+			const batch = symbolsToFetch.slice(start, bachEnd)
+			start = bachEnd
+			//fetchBatchApi.fetchBatch(batch,undefined) // TODO use abort controller to abort api call in case of premature leaving view 
+			let quoteResults = await fetchBatchApiFnCached([batch,undefined]) // TODO use abort controller to abort api call in case of premature leaving view 
+			result = result.concat(quoteResults)
+		}
+		return result
+	}
 	public async refreshWatchlistMarketData():Promise<void> {
 		interface SymbolMOMap {[symbol:string]:ManagedObject}
 		if(this.apiKey) {
@@ -141,12 +203,6 @@ export default class AppComponent extends UIComponent {
 							const mo = symbolsToMO[quote.symbol]
 							if(mo) {
 								this.updateFromQuote(mo, quote)
-//								mo.setProperty("regularMarketPrice", quote.regularMarketPrice)
-//								mo.setProperty("currency", quote.currency)
-//								mo.setProperty("quoteType", quote.quoteType)
-//								mo.setProperty("ask", quote.ask)
-//								mo.setProperty("bid", quote.bid)
-//								mo.setProperty("averageDailyVolume10Day", quote.averageDailyVolume10Day)
 							} else {
 								console.warn(`no watch managed object found for ${quote.symbol}`)
 							}

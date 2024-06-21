@@ -39,6 +39,17 @@ export default function(rm?: ResourceModel) {
             }
             return '-'
 
+        },
+        formatKind: async function(kind:string): Promise<string> {
+            // the formater seems to be called even bevore onInit fires!!!
+            const rb = await rm?.getResourceBundle()
+            switch(kind) {
+                case "S": 
+                    return rb?.getText("sell") || `(${kind})`
+                case "B": 
+                    return rb?.getText("buy") || `(${kind})`
+                default: return kind
+            }
         }
     }
 }

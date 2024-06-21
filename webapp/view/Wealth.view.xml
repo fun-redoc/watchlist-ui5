@@ -1,51 +1,66 @@
 <mvc:View   xmlns="sap.m"
+			xmlns:f="sap.f"
             xmlns:mvc="sap.ui.core.mvc"
 			xmlns:core="sap.ui.core"
-			xmlns:f="sap.ui.layout.form"
-						xmlns:rshcontrols="rsh.watchlist.ui5.control"
-						controllerName="rsh.watchlist.ui5.controller.Wealth"
+			xmlns:rshcontrols="rsh.watchlist.ui5.control"
+			xmlns:form="sap.ui.layout.form"
+			controllerName="rsh.watchlist.ui5.controller.Wealth"
 			height="100%"
 >
 	<Page 	title="TODO"
 			showNavButton="true"
 			navButtonPress=".onNavBack"	
-			class= "sapUiResponsivePadding--header" >
+			class= "sapUiResponsivePadding--header" 
+	>
 		<content>
-			<Button text="Fetch SAP"/>
-			<List id="transactionList"
-				headerText="{i18n>WealthListTitle}"
+			<f:GridList id="transactionList"
 				class="sapUiResponsiveMargin"
 				width="auto"
-				items="{ path: 'transactions>/TransactionSet',
-						sorter: { path: 'Kind', group:true }}" >
-					<headerToolbar>
-					<Toolbar>
-						<Title text="{i18n>WealthListTitle}"/>
-						<ToolbarSpacer/>
-						<SearchField width="50%" search="onFilter" selectOnFocus="false"/>
-					</Toolbar>
-					</headerToolbar>
-				<items>
-					<ObjectListItem
-						title="{transactions>Symbol} x {transactions>Amount}"
+				items="{ path: 'wealth>/',
+						sorter: { path: 'wealth>aggregations/symbol', group:false }}" >
+				<f:GridListItem >
+					<ObjectHeader
+					 	responsive="true"
+						fullScreenOptimized="true"
+						intro="{wealth>yFinData/longName}"
+						title="{wealth>aggregations/symbol}"
+						titleLevel="H4"
 						number="{
-							parts: [{path: 'transactions>Price'}, {path: 'transactions>Cuky'}],
+							parts:[{path:'wealth>aggregations/totalCostValue'},{path:'wealth>aggregations/currency'}],
 							type: 'sap.ui.model.type.Currency',
-							formatOptions: {
-								showMeasure: false
-							}
+							formatOptions: {showMeasure: false}
 						}"
-						numberUnit="{transactions>/Cuky}"
-						numberState="{= ${transactions>Price} > 50 ? 'Error' : 'Success' }"
-						type="Navigation"
-						press="onPress"
+						numberUnit="{wealth>aggregations/currency}"
+						class="sapUiResponsivePadding" 
 					>
-						<firstStatus>
-							<ObjectStatus text="{ path: 'transactions>Kind', formatter: '.formatKind' }"/>
-						</firstStatus>
-					</ObjectListItem>
-				</items>
-			</List>
+						<statuses>
+							<ObjectStatus 
+								title="{i18n>regularMarketPrice}"
+								text="{wealth>yFinData/regularMarketPrice}"
+								state="None" />
+							<ObjectStatus
+								title="{i18n>currentValue}"
+								text="{= ${wealth>yFinData/regularMarketPrice}*${wealth>aggregations/amountInStock}}"
+								state="Success" />
+						</statuses>
+						<attributes>
+							<ObjectAttribute text="{i18n>Amount} {wealth>aggregations/amountInStock}" />
+							<ObjectAttribute text="{i18n>totalBuyFee} {wealth>aggregations/totalBuyFee}" />
+							<ObjectAttribute text="{i18n>totalSellFee} {wealth>aggregations/totalSellFee}" />
+							<ObjectAttribute text="{i18n>totalYealdOnSold} {wealth>aggregations/totalYealdOnSold}" />
+							<ObjectAttribute
+								title="Link "
+								text="www.sap.com"
+								active="true"
+								press="handleLinkObjectAttributePress" />
+							<ObjectAttribute
+								text="{i18n>transactions}"
+								active="true"
+								press="onPress" />
+						</attributes>
+					</ObjectHeader>
+				</f:GridListItem>
+			</f:GridList>
 		</content>
 	</Page>
 </mvc:View>

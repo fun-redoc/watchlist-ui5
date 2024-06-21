@@ -12,22 +12,9 @@ import ManagedObjectModel from "sap/ui/model/base/ManagedObjectModel";
 import ManagedObject from "sap/ui/base/ManagedObject";
 import MOTransaction from "../managedobject/MOTransaction";
 import MOTransactionType from "../managedobject/MOTransactionType";
-import UI5Date from "sap/ui/core/date/UI5Date";
-import { DBManager, TProvideNumericID, mkDBManager } from "../services/DBManager";
+import { DBManager, mkDBManager } from "../services/DBManager";
+import TransactionEntry, { DB_NAME_TRANSACTIONS, DB_STORE_TRANSACTIONS, DB_VERSION_TRANSACTIONS } from "../types/TransactionEntry";
 
-const DB_NAME_TRANSACTIONS = "transactionsIDXDB"
-const DB_STORE_TRANSACTIONS = "transactionsStore"
-const DB_VERSION_TRANSACTIONS = 3
-
-interface TransactionEntry extends TProvideNumericID {
-    symbol:string
-    currency:string
-    transaction:string
-    price:float
-    fee:float
-    amount:int
-    date:UI5Date | Date
-}
 
 interface RouteParams {
     symbol:string
