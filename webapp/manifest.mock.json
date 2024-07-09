@@ -71,7 +71,6 @@
             "libs": {
                 "sap.ui.core": {},
                 "sap.m": {},
-                "sap.f": {},
                 "sap.ui.layout": {
                     "lazy": true
                 }
@@ -91,6 +90,12 @@
                     "fallbackLocale": "en"
                 },
                 "uri": "<uriRelativeToManifest>"
+            },
+            "transactions": {
+                "dataSource": "transactionsMock",
+                "settings": {
+                    "defaultBindingMode": "OneWay"
+                }
             }
         },
         "rootView": {

@@ -203,16 +203,17 @@ export async function  mkDBManager<T extends TProvideNumericID>(dbName:string, s
       cursorRequest.onsuccess = () => {
         const cursor = cursorRequest.result
         if(cursor) {
-          const dataRequest = store.get(cursor.key)
-          dataRequest.onerror = () => {
-            // Error callback
-            console.error("Data error: " + cursorRequest.error)
-            reject( new Error("Failed to fetch data."))
-          }
-          dataRequest.onsuccess = () => {
-            const data = dataRequest.result
-            notes.push(data)
-          }
+          notes.push(cursor.value)
+//          const dataRequest = store.get(cursor.key)
+//          dataRequest.onerror = () => {
+//            // Error callback
+//            console.error("Data error: " + cursorRequest.error)
+//            reject( new Error("Failed to fetch data."))
+//          }
+//          dataRequest.onsuccess = () => {
+//            const data = dataRequest.result
+//            notes.push(data)
+//          }
           cursor.continue()
         } else {
           // no more data

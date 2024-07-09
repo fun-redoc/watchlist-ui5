@@ -4,6 +4,8 @@
 + AssetDetail: make Chartparams customizable via menu
 
 ### TODO - Debt
++ use UI5 export binding feature: https://help.sap.com/docs/SAP_NETWEAVER_740/468a97775123488ab3345a0c48cadd8f/f1ee7a8b2102415bb0d34268046cd3ea.html
++ the buttons (flags and navigation) stay falselly selected, e.g. at start german is selected but english shown, navigate to wealt and back, wealth stay selected... always the correct button shoud be selected or none...
 + transition to Transaction(Buy) - the newly selected symbol and data apears with delay (when reloading from yfin), the old data/symbol is shown...better, nothing is shown and a "loading..." indicator
 + D3View(Base) the height in onArfterRendering is not calculated corectly (set to 0) on hight=100%
 + use AbortController on every api_ and setTimeout, setIntervale etc. call

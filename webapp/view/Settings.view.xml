@@ -1,5 +1,8 @@
-<mvc:View xmlns:layout="sap.ui.layout"   xmlns="sap.m"
-            xmlns:mvc="sap.ui.core.mvc"
+<mvc:View 
+      xmlns:layout="sap.ui.layout"   
+      xmlns="sap.m"
+      xmlns:mvc="sap.ui.core.mvc"
+			xmlns:u="sap.ui.unified"
 			controllerName="rsh.watchlist.ui5.controller.Settings"
 >
 	<Page 	title="{i18n>settingsPageTitle}"
@@ -8,11 +11,26 @@
 	>
   <content>
     <Label text="{i18n>apiKeyLabel}" labelFor="apiKeyInput"/>
-      <Input id="apiKeyInput"
-              type="Text"
-              placeholder="{i18n>enterApiKeyPlaceholderTet}"
-              value="{ path: '/apiKey', type: 'sap.ui.model.type.String', constraints: {minLength:1} }"
-      />
+    <Input id="apiKeyInput"
+            type="Text"
+            placeholder="{i18n>enterApiKeyPlaceholderTet}"
+            value="{ path: '/apiKey', type: 'sap.ui.model.type.String', constraints: {minLength:1} }"
+    />
+		<u:FileUploader
+			id="fileDownloader"
+			name="myFileDownload"
+      multiple="false"
+      buttonText="{i18n>csvLoad}"
+			tooltip="Download your transactions from a local file"
+			buttonOnly="true"
+      icon="sap-icon://download"
+			uploadComplete="onUploadComplete"
+			change="handleUploadPress"
+		/>
+    <Button id="deleteSavedTransactions" text="{i18n>DeleteAllSavedTransactions}" icon="sap-icon://delete" press=".onDeleteAllTransactions"></Button>
+    <Button text="{i18n>SaveTransactionsToCsv}" 
+      icon="sap-icon://upload"
+      press=".onSaveTransactionsCSV"></Button>
   </content>
   <footer>
     <OverflowToolbar>

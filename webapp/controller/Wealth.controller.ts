@@ -1,16 +1,23 @@
 import AppComponent from "../Component";
-import Filter from "sap/ui/model/Filter";
-import FilterOperator from "sap/ui/model/FilterOperator";
 import BaseController from "./Base.controller";
-import { DBManager, mkDBManager } from "../services/DBManager";
-import { Input$SubmitEvent } from "sap/m/Input";
+import { DBManager } from "../services/DBManager";
 import { ListBase$ItemPressEvent } from "sap/m/ListBase";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import TransactionEntry, { DB_NAME_TRANSACTIONS, DB_STORE_TRANSACTIONS, DB_VERSION_TRANSACTIONS } from "../types/TransactionEntry";
+import TransactionEntry, {  } from "../types/TransactionEntry";
 import { YFinQuoteResult } from "../types/yFinApiTypes";
-import syncStyleClass from "sap/ui/core/syncStyleClass";
+import accessTransactionsDB from "../services/transactionsDB";
 
+
+type WealthTotalsModel = {
+    currency:string
+    currentValue:number
+    cost:number
+    currentYield:number
+    currentYieldPercent:number
+    totalYiealdSold:number
+    totalFee:number
+}
 
 type WealthControllerModel = WealthAsset[]
 
@@ -19,7 +26,7 @@ interface WealthAsset {
     yFinData: YFinQuoteResult | undefined
 }
 interface WealthAggregations {
-    symbol:string
+    symbol:string|undefined
     currency:string,
     amountInStock:number
     totalCostValue:number
@@ -52,19 +59,8 @@ interface QueryParam {
 export default class WealthController extends BaseController {
 	private dbm:Promise<DBManager<TransactionEntry>>
     private static MODEL_NAME:string = "wealth"
-//    private  i18nResourceBundle:ResourceBundle
-//    private async getI18nResourceBundle():Promise<ResourceBundle | undefined> {
-//        if(this.i18nResourceBundle) return this.i18nResourceBundle
-//        const view = this.getView()
-//        if(view) {
-//            const i18nModel = view.getModel("i18n") as ResourceModel
-//            this.i18nResourceBundle = await i18nModel.getResourceBundle()
-//            return this.i18nResourceBundle
-//        } else {
-//            console.error("view not found.")
-//        }
-//    }		
-    public async onInit() {
+    private static TOTALS_MODEL_NAME:string = "wealthTotals"
+    public  onInit() {
         super.onInit()
 
         const router = (this.getOwnerComponent() as AppComponent).getRouter()
@@ -73,14 +69,14 @@ export default class WealthController extends BaseController {
         if(route) {
             console.log("route matches", route)
         } 
-        //    const a1ppComponent = this.getOwnerComponent() as AppComponent
+        //const a1ppComponent = this.getOwnerComponent() as AppComponent
         //this.getView()?.setModel(this.appComponent.getModel("yFinSearchResult"), "yFinSearchResult")
-        // TODO:refactor this code repeats in transaction controller, this is not good, refactor it
-		this.dbm = mkDBManager<TransactionEntry>(DB_NAME_TRANSACTIONS, DB_STORE_TRANSACTIONS, DB_VERSION_TRANSACTIONS, [{indexName:"symbol",isUnique:false},{indexName:"buyOrSell", isUnique:false}])
+		//this.dbm = mkDBManager<TransactionEntry>(DB_NAME_TRANSACTIONS, DB_STORE_TRANSACTIONS, DB_VERSION_TRANSACTIONS, [{indexName:"symbol",isUnique:false},{indexName:"buyOrSell", isUnique:false}])
+		this.dbm = accessTransactionsDB()
         route?.attachPatternMatched(this._onRouteMatched, this)
     }
 
-    private _loadAllTransactions() : Promise<TransactionEntry[]> {
+    private async _loadAllTransactions() : Promise<TransactionEntry[]> {
 		return this.dbm.then(dbm => dbm.list("symbol"))
     }
     private _computeTimeline(transactions:TransactionEntry[]) : TimeLine {
@@ -195,18 +191,47 @@ export default class WealthController extends BaseController {
                         view.setModel(new JSONModel(model), WealthController.MODEL_NAME)
                         return model
                     })
-                    .then(model => {
+                    .then(async model => {
                         // ask the yFinQuery Pool of the Componen for current course data
                         // the coourse data can then be bound to model yFinPool
-                        setTimeout(async () => {
-                            await this.appComponent.addToYFinPool(model.map(v => v.aggregations.symbol), "wealth");
+                        await this.appComponent.addToYFinPool(model.map(v => v.aggregations.symbol), "wealth")
+                        return model
+                    }).
+                    then(async model => {
                             const yfp = await this.appComponent.getYFinPool();
-                            model.forEach(e => {
-                                e.yFinData = yfp[e.aggregations.symbol];
-                            });
+                            model.forEach(e => { e.yFinData = yfp[e.aggregations.symbol]; });
                             console.log("setting model to", model)
                             view.setModel(new JSONModel(model), WealthController.MODEL_NAME)
+                        return model
+                    }).then(model => {
+                      //console.log(model) 
+                      const totalsModel:WealthTotalsModel =  
+                        model.reduce((totals, asset) => {
+                            let cur = totals.currency || asset.aggregations.currency || asset.yFinData.currency || 'XXX'
+                            if(asset.aggregations.currency != asset.yFinData.currency) {
+                                console.log(`currencies dont match for ${asset.aggregations.symbol}, the numbers shown may be wrong`)
+                            }
+                            if(!totals.currency != cur) {
+                                console.log(`currencies dont match for all assets at ${asset.aggregations.symbol}, numbers shown may be wrong`)
+                            }
+                            totals.currency = cur 
+                            totals.currentValue += asset.yFinData.regularMarketPrice * asset.aggregations.amountInStock
+                            totals.cost += asset.aggregations.totalCostValue
+                            totals.currentYield = totals.currentValue-totals.cost
+                            totals.currentYieldPercent = totals.currentYield / totals.cost
+                            totals.totalYiealdSold += asset.aggregations.totalYealdOnSold
+                            totals.totalFee += asset.aggregations.totalSellFee + asset.aggregations.totalBuyFee
+                            return totals
+                        }, {
+                            currency:undefined,
+                            currentValue:0,
+                            cost:0,
+                            currentYield:0,
+                            currentYieldPercent:0,
+                            totalYiealdSold:0,
+                            totalFee:0
                         })
+                        view.setModel(new JSONModel(totalsModel), WealthController.TOTALS_MODEL_NAME)
                     })
                     .catch(reason => {
                         console.error(reason)
@@ -256,8 +281,8 @@ export default class WealthController extends BaseController {
         console.log("Wealth.controller.onPress")
         const provider = e.getSource()
         const bindingContext = provider.getBindingContext(WealthController.MODEL_NAME)
-        const path = bindingContext?.getPath()
-        const transactionPath =  path?.substring(1) // get rid of trailing slash
+        //const path = bindingContext?.getPath()
+        //const transactionPath =  path?.substring(1) // get rid of trailing slash
         const yFinData = bindingContext?.getObject("aggregations") as YFinQuoteResult
         const symbol = yFinData.symbol
         const ownerComponent = this.getOwnerComponent() as AppComponent
@@ -269,5 +294,55 @@ export default class WealthController extends BaseController {
         }
 //			const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 //			oRouter.navTo("detail");
+    }
+    public getCurrentValueFormatted(price:number, stock:number, currency?:string) {
+        return this.formatter.formatAsCurrency(price*stock, currency)
+    }
+    public getAverageBuyPrice(ctx:WealthAggregations) : string {
+        if(ctx && ctx.amountInStock > 0) {
+            return this.formatter.formatAsCurrency(ctx.totalCostValue/ctx.amountInStock, ctx.currency)
+        } else {
+            return '-'
+        }
+    }
+    public async getCurrentYield(ctx:WealthAsset) : Promise<number|undefined> {
+        return this.appComponent.getYFinPool().then(result => {
+            const yfp = result[ctx.aggregations.symbol]
+            if(!yfp) {
+                console.warn(`no yfin Data found for ${ctx.aggregations.symbol}.`)
+                return undefined
+            }
+
+            if(!ctx.aggregations.currency || !yfp.currency) {
+                console.warn("one of the currencies is not defined, the yeald calc may be wrong for", ctx.aggregations.symbol)
+            }
+            if(ctx.aggregations.currency !== yfp.currency) {
+                console.warn("currencies do not match, yield calc may be wrong for", ctx.aggregations.symbol)
+            }
+            return yfp.regularMarketPrice*ctx.aggregations.amountInStock - ctx.aggregations.totalCostValue
+        })
+        .catch(reason => {
+            console.warn(`no yfin Data found for ${ctx.aggregations.symbol}, reason:`, reason)
+            return undefined
+        })
+    }
+    public async getCurrentYieldWithFormat(ctx:WealthAsset) : Promise<string> {
+        return this.getCurrentYield(ctx).then(result  => {
+            const cur = ctx.aggregations.currency
+            return this.formatter.formatAsCurrency(result, cur)
+        })
+        .catch(reason => {
+            console.warn(`something wrong happened for ${ctx.aggregations.symbol}:`, reason)
+            return 'n.a.'
+        })
+    }
+    public async getCurrentYieldState(ctx:WealthAsset) : Promise<string> {
+        return this.getCurrentYield(ctx).then(result  => {
+            return result >= 0 ? "Success" : "Error"
+        })
+        .catch(reason => {
+            console.warn(`something wrong happened for ${ctx.aggregations.symbol}:`, reason)
+            return 'n.a.'
+        })
     }
 }

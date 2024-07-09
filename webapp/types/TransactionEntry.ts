@@ -6,6 +6,8 @@ export const DB_VERSION_TRANSACTIONS = 3
 
 interface TransactionEntry extends TProvideNumericID {
     symbol:string
+    name:string
+    bank:string
     currency:string
     transaction:"Buy"|"Sell"
     price:float

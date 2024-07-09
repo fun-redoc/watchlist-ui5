@@ -2,6 +2,10 @@
 
 ## start
 npx ui5 serve -o index.html
+npx ui5 serve --config ui5-mock.yaml -o mockService/mockserver.html
+
+## unit tests
+npx ui5 serve --config ui5-mock.yaml -o test/unit/unitTest.qunit.html
 
 ## download framework
 download an appropriate version of sapui5 / openui5 framework from sap cdn

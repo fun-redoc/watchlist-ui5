@@ -8,10 +8,10 @@
       <Image src="../flags/1x1/de.svg" class="fi" press="onLangDE"></Image>
       <Image src="../flags/1x1/pl.svg" class="fi" press="onLangPL"></Image>
       <Image src="../flags/1x1/gb.svg" class="fi" press="onLangEN"></Image>
-      <Button icon="sap-icon://heatmap-chart" press="onTransactions"/>
-      <Button icon="sap-icon://customer-financial-fact-sheet" press="onWealth"/>
-      <Button icon="sap-icon://favorite-list" press="onWatchlist"/>
-      <Button icon="sap-icon://settings" press="onSettings"/>
+      <Button text="TODO" icon="sap-icon://heatmap-chart" press="onTransactions"/>
+      <Button text="{i18n>Wealth}" icon="sap-icon://customer-financial-fact-sheet" press="onWealth"/>
+      <Button text="{i18n>Watch}" icon="sap-icon://favorite-list" press="onWatchlist"/>
+      <Button text="{i18n>Settings}" icon="sap-icon://settings" press="onSettings"/>
     </headerContent>
     <footer>
     <Toolbar >

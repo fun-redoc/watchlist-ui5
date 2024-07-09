@@ -1,15 +1,18 @@
-import Controller from "sap/ui/core/mvc/Controller";
-import History from "sap/ui/core/routing/History";
 import AppComponent from "../Component";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
-import ResourceModel from "sap/ui/model/resource/ResourceModel";
-import MessageToast from "sap/m/MessageToast";
-import Log from "sap/base/Log";
 import { Input$SubmitEvent } from "sap/m/Input";
-import ResourceBundle from "sap/base/i18n/ResourceBundle";
 import Filter from "sap/ui/model/Filter";
 import FilterOperator from "sap/ui/model/FilterOperator";
 import { ListBase$ItemPressEvent } from "sap/m/ListBase";
+import BaseController from "./Base.controller";
+import JSONModel from "sap/ui/model/json/JSONModel";
+import { DBManager, mkDBManager } from "../services/DBManager";
+import TransactionEntry, { DB_NAME_TRANSACTIONS, DB_STORE_TRANSACTIONS, DB_VERSION_TRANSACTIONS } from "../types/TransactionEntry";
+import parseCsv from "../services/parseCsv";
+import accessTransactionsDB from "../services/transactionsDB";
+import { FileUploader$ChangeEvent } from "sap/ui/unified/FileUploader";
+import Context from "sap/ui/model/Context";
+import GroupHeaderListItem from "sap/m/GroupHeaderListItem";
 
 interface RoutParams {
     assetIdx:string
@@ -20,75 +23,52 @@ interface QueryParam {
 /**
  * @namespace rsh.watchlist.ui5.controller
  */
-export default class TransactionsController extends Controller {
-    private  i18nResourceBundle:ResourceBundle
-    private async getI18nResourceBundle():Promise<ResourceBundle | undefined> {
-        if(this.i18nResourceBundle) return this.i18nResourceBundle
+export default class TransactionsController extends BaseController {
+	private dbm:Promise<DBManager<TransactionEntry>>
+    private static MODEL_NAME:string = "transactions"
+    public onInit() {
+        super.onInit()
+
+        const router = (this.getOwnerComponent() as AppComponent).getRouter()
+        // eslint-disable-next-line @typescript-eslint/unbound-method
+        const route = router.getRoute("transactions")
+        if(route) {
+            console.log("route matches", route)
+        } 
+		//this.dbm = mkDBManager<TransactionEntry>(DB_NAME_TRANSACTIONS, DB_STORE_TRANSACTIONS, DB_VERSION_TRANSACTIONS, [{indexName:"symbol",isUnique:false},{indexName:"buyOrSell", isUnique:false}])
+		this.dbm = accessTransactionsDB()
+        route?.attachPatternMatched(this._onRouteMatched, this)
+    }
+
+    private _onRouteMatched(oEvent:Route$PatternMatchedEvent):void {
         const view = this.getView()
         if(view) {
-            const i18nModel = view.getModel("i18n") as ResourceModel
-            this.i18nResourceBundle = await i18nModel.getResourceBundle()
-            return this.i18nResourceBundle
-        } else {
-            console.error("view not found.")
+            this.dbm.then(db => {
+                return db.list("symbol")
+            })
+            .then(ts => {
+                view.setModel(new JSONModel(ts), TransactionsController.MODEL_NAME)
+            })
+            .catch(reason => {
+                console.error(reason)
+                this.showErrorMessageWithFallback("FailedToLoadTransactions", "Transactions could not be loaded, try again later.")
+            })
         }
-    }		
-    public async onInit() {
-        await this.getI18nResourceBundle()
-
-            const router = (this.getOwnerComponent() as AppComponent).getRouter()
-            // eslint-disable-next-line @typescript-eslint/unbound-method
-            const route = router.getRoute("assetdetail")
-            if(route) {
-                console.log("route matches", route)
-            } 
-            //const appComponent = this.getOwnerComponent() as AppComponent
-            //this.getView()?.setModel(appComponent.getModel("yFinSearchResult"), "yFinSearchResult")
-            //route?.attachPatternMatched(this._onObjectMatched, this)
     }
 
-//    private _onObjectMatched(oEvent:Route$PatternMatchedEvent):void {
-//            console.log("in on Object matched")
-//			const view = this.getView()
-//            if(view) {
-//                console.log(oEvent)
-//                console.log(oEvent?.getParameter("arguments"))
-//                console.log((oEvent?.getParameter("arguments") as RoutParams).assetIdx)
-//                console.log("/" + window.decodeURIComponent((oEvent?.getParameter("arguments") as RoutParams).assetIdx))
-//                view.bindElement({
-//                    path: "/" + window.decodeURIComponent((oEvent?.getParameter("arguments") as RoutParams).assetIdx),
-//                    model: "yFinSearchResult"
-//                })
-//            } else {
-//                console.error("somtething wnt wrong. view is not bound. try again later.")
-//                throw new Error("somtething wnt wrong. try again later.")
-//            }
+    // moved to formatters.ts
+//    public async formatKind(kind:string): Promise<string> {
+//        // the formater seems to be called even bevore onInit fires!!!
+//        const rb = await this.getI18nResourceBundle()
+//        switch(kind) {
+//            case "S": 
+//                return rb?.getText("sell") || `(${kind})`
+//            case "B": 
+//                return rb?.getText("buy") || `(${kind})`
+//            default: return kind
+//        }
 //    }
 //
-    public onNavBack() {
-			const oHistory = History.getInstance();
-			const sPreviousHash = oHistory.getPreviousHash();
-
-			if (sPreviousHash !== undefined) {
-				window.history.go(-1);
-			} else {
-				const oRouter = (this.getOwnerComponent() as AppComponent).getRouter()
-				oRouter.navTo("root",undefined, true);
-			}
-    }
-
-    public async formatKind(kind:string): Promise<string> {
-        // the formater seems to be called even bevore onInit fires!!!
-        const rb = await this.getI18nResourceBundle()
-        switch(kind) {
-            case "S": 
-                return rb?.getText("sell") || `(${kind})`
-            case "B": 
-                return rb?.getText("buy") || `(${kind})`
-            default: return kind
-        }
-    }
-
     //  Filter does not work seemingly
     public onFilter(e:Input$SubmitEvent) {
         console.log("onFitler", e)
@@ -124,7 +104,60 @@ export default class TransactionsController extends Controller {
         } else {
             throw new Error("something wrong happened. try again later")
         }
-//			const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-//			oRouter.navTo("detail");
+    }
+
+    private formatCurency(amt:number, cur?:string) {
+        const cur1 = cur || "XXX" // XXX is no currency according to https://en.wikipedia.org/wiki/ISO_4217#List_of_ISO_4217_currency_codes
+        const language = navigator.language
+        const fmtedAmt =  new Intl.NumberFormat(language, { style: 'currency', currency: cur1 }).format(amt);
+        return fmtedAmt
+    }
+    public getTotalValue(ctx:TransactionEntry) {
+        //console.log("in getTotalValue", ctx)
+        const amt = ctx.amount*ctx.price + ctx.fee
+            if(amt) {
+                return this.formatCurency(amt, ctx.currency)
+//                const cur1 = ctx.currency || "XXX" // XXX is no currency according to https://en.wikipedia.org/wiki/ISO_4217#List_of_ISO_4217_currency_codes
+//                const language = navigator.language
+//                const fmtedAmt =  new Intl.NumberFormat(language, { style: 'currency', currency: cur1 }).format(amt);
+//                return fmtedAmt
+            } else {
+                return ''
+            }
+    }
+
+    public getGroupHeader(group:any):GroupHeaderListItem {
+        type GroupAggregations = {totalAmount:number, totalValue:number}
+        const model = this.getView().getModel(TransactionsController.MODEL_NAME).getObject("/") as TransactionEntry[]
+        const groupMembers = model.filter(transactionEntry => transactionEntry.symbol === group.key)
+        //const groupName = model.find(transactionEntry => transactionEntry.symbol === group.key).name
+        if(groupMembers.length > 0) {
+            const groupName = groupMembers.at(0).name
+            const aggregations:GroupAggregations = groupMembers.reduce(
+                (acc:GroupAggregations, t:TransactionEntry)  => {
+                    switch(t.transaction) {
+                        case "Buy":
+                            acc.totalAmount += t.amount
+                            acc.totalValue += t.price*t.amount + t.fee
+                            break
+                        case "Sell":
+                            acc.totalAmount -= t.amount
+                            acc.totalValue -= t.price*t.amount - t.fee
+                            break
+                    }
+                    return acc
+                },
+                {totalAmount:0, totalValue:0 } as GroupAggregations
+            )
+            return new GroupHeaderListItem({
+                title : groupName ? `${groupName} (${group.key}) - ${aggregations.totalAmount} - ${this.formatCurency(aggregations.totalValue)}` : group.key
+            })
+        } else {
+            // fallback in case of empty group for what so ever reason
+            console.warn("empty group for ", group.key)
+            return new GroupHeaderListItem({
+                title :  group.key
+            })
+        }
     }
 }

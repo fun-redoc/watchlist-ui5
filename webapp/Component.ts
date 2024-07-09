@@ -10,6 +10,7 @@ import ResourceModel from "sap/ui/model/resource/ResourceModel";
 import { api_getAssetBatch } from "./services/yFinApiService";
 import useCache from "./services/cacheService";
 import { YFinQuoteResult } from "./types/yFinApiTypes";
+import Device from "sap/ui/Device";
 
 export const DB_NAME_WATCHLIST = "watchlistUI5DB"
 export const DB_STORE_WATCHLIST = "watchlistUI5Store"
@@ -37,6 +38,14 @@ export default class AppComponent extends UIComponent {
 				bindable:true
 			}
 		},
+		properties: {
+			"deviceType": {
+				type:"string",
+				bindable:true,
+				defaultValue:"Phone",
+				visibility:"public"
+			}
+		},
 		defaultAggregation: "watchlist",
 	}
 	private apiKey:string|null
@@ -51,10 +60,13 @@ export default class AppComponent extends UIComponent {
 		return this.i18nResourceBundle
     }
 
-	public async init()  {
+	public  init()  {
 		super.init();
 		this.setModel(new ManagedObjectModel(this), "component")
 		this.getModel("component")?.setDefaultBindingMode("TwoWay") // TODO?? is this correct??
+
+		const model = this.getModel("component") as ManagedObjectModel
+		model.setProperty("/deviceType", Device.media.getCurrentRange('Std').name)
 
 		// create the views based on the url/hash
 		this.getRouter().initialize();
@@ -98,7 +110,6 @@ export default class AppComponent extends UIComponent {
 				me.addAggregation("watchlist", mo)
 			})
 			//this.getModel("component")?.refresh()
-			console.log("read compont model")
 		})
 		this.getModel("component")?.refresh()
 	}

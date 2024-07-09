@@ -57,15 +57,4 @@ export default class WatchlistController extends BaseController {
         }
     }
 
-    public onNavBack() {
-        const oHistory = History.getInstance();
-        const sPreviousHash = oHistory.getPreviousHash();
-
-        if (sPreviousHash !== undefined) {
-            window.history.go(-1);
-        } else {
-            const oRouter = (this.getOwnerComponent() as AppComponent).getRouter()
-            oRouter.navTo("root",undefined, true);
-        }
-    }
 }

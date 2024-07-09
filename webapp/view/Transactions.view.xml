@@ -1,9 +1,10 @@
-<mvc:View   xmlns="sap.m"
+<mvc:View xmlns:tnt="sap.tnt"   xmlns="sap.m"
             xmlns:mvc="sap.ui.core.mvc"
 			xmlns:core="sap.ui.core"
 			xmlns:f="sap.ui.layout.form"
-						xmlns:rshcontrols="rsh.watchlist.ui5.control"
-						controllerName="rsh.watchlist.ui5.controller.Transactions"
+			xmlns:u="sap.ui.unified"
+			xmlns:rshcontrols="rsh.watchlist.ui5.control"
+			controllerName="rsh.watchlist.ui5.controller.Transactions"
 			height="100%"
 >
 				<!--
@@ -14,40 +15,38 @@
 				-->
 	<Page 	title="{i18n>TransactionsPageTitle}"
 			showNavButton="true"
+			showHeader="true"
 			navButtonPress=".onNavBack"	
 			class= "sapUiResponsivePadding--header" >
+		<headerContent>
+		</headerContent>
 		<content>
 			<List id="transactionList"
 				headerText="{i18n>TransactionsListTitle}"
 				class="sapUiResponsiveMargin"
 				width="auto"
-				items="{ path: 'transactions>/TransactionSet',
-						sorter: { path: 'Symbol', group:true }}" >
-					<headerToolbar>
-					<Toolbar>
-						<Title text="{i18n>TransactionsListTitle}"/>
-						<ToolbarSpacer/>
-						<SearchField width="50%" search="onFilter" selectOnFocus="false"/>
-					</Toolbar>
-					</headerToolbar>
+				items="{ path: 'transactions>/',
+						sorter: [{ path: 'symbol', group:true },{path:'date', group:false}],
+								 groupHeaderFactory: '.getGroupHeader'}" 
+			>
+				<headerToolbar>
+				<Toolbar>
+					<Title text="{i18n>TransactionsListTitle}"/>
+					<ToolbarSpacer/>
+					<SearchField width="50%" search="onFilter" selectOnFocus="false" placeholder="{i18n>TODONotYetImplemented}"/>
+				</Toolbar>
+				</headerToolbar>
 				<items>
 					<ObjectListItem
-						title="{transactions>Symbol} x {transactions>Amount}"
+						title="{path: 'transactions>date', formatter: '.formatter.formatDate'} - {= ${transactions>transaction} === 'Sell' ? ${i18n>Sell} :  ${i18n>Buy} } - {i18n>Amount}:{transactions>amount} x {i18n>Price}:{transactions>price} + {i18n>Fee}:{transactions>fee}"
 						number="{
-							parts: [{path: 'transactions>Price'}, {path: 'transactions>Cuky'}],
-							type: 'sap.ui.model.type.Currency',
-							formatOptions: {
-								showMeasure: false
-							}
+							parts: [{path: 'transactions>'}],
+							formatter: '.getTotalValue'
 						}"
-						numberUnit="{transactions>/Cuky}"
-						numberState="{= ${transactions>Price} > 50 ? 'Error' : 'Success' }"
+						numberState="{= ${transactions>transaction} === 'Sell' ? 'Error' : 'Success' }"
 						type="Navigation"
 						press="onPress"
 					>
-						<firstStatus>
-							<ObjectStatus text="{ path: 'transactions>Kind', formatter: '.formatKind' }"/>
-						</firstStatus>
 					</ObjectListItem>
 				</items>
 			</List>

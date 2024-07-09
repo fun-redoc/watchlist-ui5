@@ -9,6 +9,7 @@ import MessageType from "sap/ui/core/message/MessageType";
 import BindingMode from "sap/ui/model/BindingMode";
 import encodeURLParameters from "sap/base/security/encodeURLParameters";
 import encodeJS from "sap/base/security/encodeJS";
+import formatter from "../formatter";
 
 interface MessageModel {
     text?:string
@@ -19,6 +20,7 @@ interface MessageModel {
  * @namespace rsh.watchlist.ui5.controller
  */
 export default class BaseController extends Controller {
+    public formatter = formatter(this.getOwnerComponent()?.getModel("i18n") as ResourceModel)
     private  i18nResourceBundle:Promise<ResourceBundle> | ResourceBundle
     protected static TIME_TO_SHOW_MESSAGE_MILLIS = 3000;
     protected appComponent: AppComponent
@@ -64,7 +66,7 @@ export default class BaseController extends Controller {
        return `${value}%`
     }
     /**
-     * needs a Toolbar with a MessageStrip
+     * needs a Toolbar with a MessageStrip in the View
      * @param message 
      */
     protected showErrorMessage(message?:string) {
@@ -78,42 +80,59 @@ export default class BaseController extends Controller {
                                  }, BaseController.TIME_TO_SHOW_MESSAGE_MILLIS)
             }
     }
-        public async onSettings(e:Button$PressEvent) {
-            console.log("onSettings pressed")
-            this.onNavigate("settings", e)
-        }
-        public async onWealth(e:Button$PressEvent) {
-            console.log("onWealth pressed")
-            this.onNavigate("wealth", e)
-        }
-        public async onWatchlist(e:Button$PressEvent) {
-            console.log("onWatchlist pressed")
-            this.onNavigate("watchlist", e)
-        }
-        public async onTransactions(e:Button$PressEvent) {
-            console.log("onTransactions pressed")
-            this.onNavigate("transactions", e)
-        }
-        public async onNavigate(page:string, e?:Button$PressEvent, params?:Record<string,string|number|boolean>) {
-            console.log("BaseController:onNavigate")
-            const ownerComponent = this.getOwnerComponent() as AppComponent
-            const router = ownerComponent.getRouter()
-            if(router) {
-                router.navTo(page, params)
-            } else {
-                this.showErrorMessage((await this.getI18nResourceBundle())?.getText("genericUserErrorMessage"))
-                throw new Error("no router found in owner component.")
-            }
-        }
-        public onNavBack() {
-			const history = History.getInstance();
-			const previousHash = history.getPreviousHash();
 
-			if (previousHash !== undefined || !this.appComponent) {
-				window.history.go(-1);
-			} else {
-				const router = this.appComponent.getRouter()
-				router.navTo("root",undefined, true);
-			}
-		}
+    /**
+     * needs a Toolbar with a MessageStrip in the View bound to "messageModel"
+     * @param message 
+     */
+    protected showErrorMessageWithFallback(i18nTag:string, fallback:string) {
+      this.getI18nResourceBundle()
+        .then(bndl => {
+          const txt = bndl.getText(i18nTag);
+          this.showErrorMessage(txt);
+        })
+        .catch(reason2 => {
+          console.error("no i18n Text found, showing fallback.", reason2);
+          this.showErrorMessage(fallback);
+        })
+    }
+
+    public async onSettings(e:Button$PressEvent) {
+        console.log("onSettings pressed")
+        this.onNavigate("settings", e)
+    }
+    public async onWealth(e:Button$PressEvent) {
+        console.log("onWealth pressed")
+        this.onNavigate("wealth", e)
+    }
+    public async onWatchlist(e:Button$PressEvent) {
+        console.log("onWatchlist pressed")
+        this.onNavigate("watchlist", e)
+    }
+    public async onTransactions(e:Button$PressEvent) {
+        console.log("onTransactions pressed")
+        this.onNavigate("transactions", e)
+    }
+    public async onNavigate(page:string, e?:Button$PressEvent, params?:Record<string,string|number|boolean>) {
+        console.log("BaseController:onNavigate")
+        const ownerComponent = this.getOwnerComponent() as AppComponent
+        const router = ownerComponent.getRouter()
+        if(router) {
+            router.navTo(page, params)
+        } else {
+            this.showErrorMessage((await this.getI18nResourceBundle())?.getText("genericUserErrorMessage"))
+            throw new Error("no router found in owner component.")
+        }
+    }
+    public onNavBack() {
+        const history = History.getInstance();
+        const previousHash = history.getPreviousHash();
+
+        if (previousHash !== undefined || !this.appComponent) {
+            window.history.go(-1);
+        } else {
+            const router = this.appComponent.getRouter()
+            router.navTo("root",undefined, true);
+        }
+    }
 }
