@@ -23,6 +23,9 @@ rm -rf "$WWW_FOLDER"/managedobject
 rm -rf "$WWW_FOLDER"/mockService
 rm -rf "$WWW_FOLDER"/services
 rm -rf "$WWW_FOLDER"/types
+rm -rf "$WWW_FOLDER"/resources/sap/ui/test
+rm -rf "$WWW_FOLDER"/resources/sap/ui/qunit
+rm -rf "$WWW_FOLDER"/resources/sap/ui/model/odata
 find "$WWW_FOLDER" -name '*dbg*' -exec rm -f {} \;
 find "$WWW_FOLDER" -name '*.ts' -exec rm -f {} \;
 find "$WWW_FOLDER" -name '*debug.js.*' -exec rm -f {} \;
