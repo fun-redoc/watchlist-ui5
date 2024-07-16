@@ -28,6 +28,9 @@ interface YFinPoolEntry extends YFinQuoteResult {
  */
 export default class AppComponent extends UIComponent {
 	static API_KEY_STORAGE_ID = "apiKeyInput"
+	static USE_CACHE_STORAGE_ID = "useCache"
+	static CACHE_INTERVAL_STORAGE_ID = "cacheInterval"
+
 	public static readonly metadata:ComponentMetadataOptions = {
 		manifest: "json",
 		aggregations: {
@@ -44,11 +47,40 @@ export default class AppComponent extends UIComponent {
 				bindable:true,
 				defaultValue:"Phone",
 				visibility:"public"
-			}
+			},
+			"deviceIsNotTouch": {
+				type:"boolean",
+				bindable:true,
+				defaultValue:false,
+				visibility:"public"
+			},
+			"deviceIsTouch": {
+				type:"boolean",
+				bindable:true,
+				defaultValue:false,
+				visibility:"public"
+			},
+			"apiKey": {
+				type:"string",
+				bindable:true,
+				defaultValue:"",
+				visibility:"public"
+			},
+			"useCache": {
+				type:"boolean",
+				bindable:true,
+				defaultValue:false,
+				visibility:"public"
+			},
+			"cacheInterval": {
+				type:"sap.ui.model.type.Integer",
+				bindable:true,
+				defaultValue:15,
+				visibility:"public"
+			},
 		},
 		defaultAggregation: "watchlist",
 	}
-	private apiKey:string|null
 	private dbm:Promise<DBManager<WatchStock>>
     private  i18nResourceBundle:Promise<ResourceBundle> | ResourceBundle
 	private yFinPool :Promise<Record<Symbol,YFinPoolEntry>> = new Promise(resolve => resolve({}))
@@ -63,14 +95,16 @@ export default class AppComponent extends UIComponent {
 	public  init()  {
 		super.init();
 		this.setModel(new ManagedObjectModel(this), "component")
-		this.getModel("component")?.setDefaultBindingMode("TwoWay") // TODO?? is this correct??
+		this.getModel("component")?.setDefaultBindingMode("TwoWay") 
 
 		const model = this.getModel("component") as ManagedObjectModel
 		model.setProperty("/deviceType", Device.media.getCurrentRange('Std').name)
+		model.setProperty("/deviceIsTouch", Device.support.touch)
+		model.setProperty("/deviceIsNotTouch", !Device.support.touch)
 
 		// create the views based on the url/hash
 		this.getRouter().initialize();
-		this.apiKey =  localStorage.getItem(AppComponent.API_KEY_STORAGE_ID)
+		this.loadSettings()
 
 		this.loadWatchlistFromIndexDB()
 
@@ -84,12 +118,34 @@ export default class AppComponent extends UIComponent {
 	public onActivate(): void {
 		console.log("AppComonent onActivate")
 	}
-	public saveApiKey(apiKey:string) {
-		this.apiKey
-		localStorage.setItem(AppComponent.API_KEY_STORAGE_ID, apiKey)
+	public saveSettings(apiKey:string, useCache:boolean, cacheInterval?:number) {
+		const model = this.getModel("component") as ManagedObjectModel
+		model.setProperty("/apiKey", apiKey)
+		model.setProperty("/useCache", useCache)
+		if(cacheInterval) {
+			model.setProperty("/cacheInterval", cacheInterval)
+		} 
+		setTimeout(() => {
+			localStorage.setItem(AppComponent.API_KEY_STORAGE_ID, apiKey)
+			localStorage.setItem(AppComponent.USE_CACHE_STORAGE_ID, `${useCache}`)
+			if(cacheInterval) {
+				localStorage.setItem(AppComponent.CACHE_INTERVAL_STORAGE_ID, `${cacheInterval}`)
+			}
+		})
 	}
-	public getApiKey():string|null {
-		return this.apiKey
+	private loadSettings() {
+		const apiKey =  localStorage.getItem(AppComponent.API_KEY_STORAGE_ID)
+		const useCacheString =  localStorage.getItem(AppComponent.USE_CACHE_STORAGE_ID)
+		const useCache = useCacheString === 'true'
+		const cacheIntervalString =  localStorage.getItem(AppComponent.CACHE_INTERVAL_STORAGE_ID)
+		const cacheInterval = Number.parseInt(cacheIntervalString)
+		const model = this.getModel("component") as ManagedObjectModel
+		model.setProperty("/apiKey", apiKey)
+		model.setProperty("/useCache", useCache)
+		if(cacheInterval) {
+			// otherwiese take default
+			model.setProperty("/cacheInterval", cacheInterval)
+		}
 	}
 	public async getWatchDBM():Promise<DBManager<WatchStock>> {
 		return await this.dbm
@@ -117,7 +173,7 @@ export default class AppComponent extends UIComponent {
 		try {
 			const dbManager = await this.getWatchDBM()
 			const _= await dbManager.add(watch)
-			const mo = new MOWatchStock() // found no way to create a ManagedObject as propoer typescript class
+			const mo = new MOWatchStock() // found no way to create a ManagedObject as proper typescript class
 			mo.setProperty("symbol",watch.symbol) 
 			mo.setProperty("name",watch.name)
 			mo.setAggregation("watchSince",watch.watchSince)
@@ -157,7 +213,8 @@ export default class AppComponent extends UIComponent {
 	}
 
 	public  async refreshYFinPool():Promise<void> {
-		if(!this.apiKey) { return }
+		const apiKey = this.getProperty("apiKey")
+		if(!apiKey) { return }
 		const yfp = await this.yFinPool
 		const symbolsToFetch = Object.keys(yfp)
 		// retain filters
@@ -175,24 +232,47 @@ export default class AppComponent extends UIComponent {
 	}
 
 	private async fetchFromYFin(symbolsToFetch:Symbol[]) : Promise<YFinQuoteResult[]> {
-		if(!this.apiKey) { return [] }
-		const fetchBatchApi = api_getAssetBatch(this.apiKey)
-		const fetchBatchApiFn = fetchBatchApi.fetchBatch
-		const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:1000*60*5})
-		let result:YFinQuoteResult[] = []
-		for(var start = 0; start < symbolsToFetch.length; ) {
-			const bachEnd = Math.min(symbolsToFetch.length, start+fetchBatchApi.MAX_BATCH_SIZE)
-			const batch = symbolsToFetch.slice(start, bachEnd)
-			start = bachEnd
-			//fetchBatchApi.fetchBatch(batch,undefined) // TODO use abort controller to abort api call in case of premature leaving view 
-			let quoteResults = await fetchBatchApiFnCached([batch,undefined]) // TODO use abort controller to abort api call in case of premature leaving view 
-			result = result.concat(quoteResults)
+		const apiKey = this.getProperty("apiKey")
+		const doUseCache = this.getProperty("useCache") as boolean
+		const cacheInterval = this.getProperty("cacheInterval") as number
+		if(!apiKey) { return [] }
+		if(doUseCache) {
+			console.log("Component:fetchFromYFin:doUseCache:", doUseCache)
+			console.log("Component:fetchFromYFin:cacheInterval:", cacheInterval)
+			const fetchBatchApi = api_getAssetBatch(apiKey)
+			const fetchBatchApiFn = fetchBatchApi.fetchBatch
+			const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:cacheInterval})
+			let result:YFinQuoteResult[] = []
+			for(var start = 0; start < symbolsToFetch.length; ) {
+				const bachEnd = Math.min(symbolsToFetch.length, start+fetchBatchApi.MAX_BATCH_SIZE)
+				const batch = symbolsToFetch.slice(start, bachEnd)
+				start = bachEnd
+				//fetchBatchApi.fetchBatch(batch,undefined) // TODO use abort controller to abort api call in case of premature leaving view 
+				let quoteResults = await fetchBatchApiFnCached([batch,undefined]) // TODO use abort controller to abort api call in case of premature leaving view 
+				result = result.concat(quoteResults)
+			}
+			return result
+		} else {
+			console.log("Component:fetchFromYFin:doUseCache:", doUseCache)
+			const fetchBatchApi = api_getAssetBatch(apiKey)
+			//const fetchBatchApiFn = fetchBatchApi.fetchBatch
+			//const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:cacheInterval})
+			let result:YFinQuoteResult[] = []
+			for(var start = 0; start < symbolsToFetch.length; ) {
+				const bachEnd = Math.min(symbolsToFetch.length, start+fetchBatchApi.MAX_BATCH_SIZE)
+				const batch = symbolsToFetch.slice(start, bachEnd)
+				start = bachEnd
+				let quoteResults = await fetchBatchApi.fetchBatch(batch,undefined) // TODO use abort controller to abort api call in case of premature leaving view 
+				//let quoteResults = await fetchBatchApiFnCached([batch,undefined]) // TODO use abort controller to abort api call in case of premature leaving view 
+				result = result.concat(quoteResults)
+			}
+			return result
 		}
-		return result
 	}
 	public async refreshWatchlistMarketData():Promise<void> {
 		interface SymbolMOMap {[symbol:string]:ManagedObject}
-		if(this.apiKey) {
+		const apiKey = this.getProperty("apiKey")
+		if(apiKey) {
 			const watched = this.getWatchlist()
 			const symbolsToMO:SymbolMOMap = watched.reduce((acc, mo) =>  {
 				const symbol = mo.getProperty("symbol") as string
@@ -200,7 +280,7 @@ export default class AppComponent extends UIComponent {
 				return acc
 			}, {} as SymbolMOMap) // maybe use Map<T,S> or Record<T,S>
 			const symbolsToFetch = Object.keys(symbolsToMO)
-			const fetchBatchApi = api_getAssetBatch(this.apiKey)
+			const fetchBatchApi = api_getAssetBatch(apiKey)
 			const fetchBatchApiFn = fetchBatchApi.fetchBatch
 			const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:1000*60*5})
 			for(var start = 0; start < symbolsToFetch.length; ) {
@@ -235,4 +315,5 @@ export default class AppComponent extends UIComponent {
 	public getWatchlist() : ManagedObject[] {
 		return this.getAggregation("watchlist") as ManagedObject[]
 	}
+
 }

@@ -1,11 +1,10 @@
 sap.ui.define([
-  "d3",
   "jquery.sap.global",
   "sap/ui/core/Control",
   "sap/ui/core/HTML",
   "sap/ui/core/ResizeHandler",
   "sap/ui/core/mvc/OverrideExecution"
-], function(d3,jquery, Control, HTML, ResizeHandler, OverrideExecution) {
+], function(jquery, Control, HTML, ResizeHandler, OverrideExecution) {
   "use strict";
   
   const D3ViewBase = Control.extend("rsh.controls.D3ViewBase", {

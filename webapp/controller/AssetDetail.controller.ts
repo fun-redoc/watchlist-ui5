@@ -126,7 +126,7 @@ export default class AssetDetail extends BaseController {
                 })
             }
         }
-        private _getChartWithCache = useCache<YFinChartResult, typeof api_getChart>(api_getChart, {timeOutMillis:60*60*1000});
+        private _getChartWithCache = (cacheInterval:number) => useCache<YFinChartResult, typeof api_getChart>(api_getChart, {timeOutMillis:cacheInterval});
 
 		private _onObjectMatched(oEvent:Route$PatternMatchedEvent):void {
             console.log("in on Object matched")
@@ -141,7 +141,7 @@ export default class AssetDetail extends BaseController {
                     model: "yFinSearchResult"
                 })
                 Log.trace("setting chart model")
-                const apiKey = this.appComponent.getApiKey()
+                const apiKey = this.appComponent.getProperty("apiKey")
                 if(!apiKey) {
                     Log.error("no api key found")
                     this.getI18nResourceBundle()
@@ -151,11 +151,14 @@ export default class AssetDetail extends BaseController {
                 } else {
                 // TODO make Chartparams customizable via menu
                 const chartParams:ChartParams = {range:"1y", interval:"1mo", event:"split"}
-                const abortController = undefined // TODO, hot to appropriatelly use AbortController in ui5
-                const symbol = view.getBindingContext("yFinSearchResult")?.getObject("symbol") as string | undefined
+                const abortController: AbortController = undefined // TODO, hot to appropriatelly use AbortController in ui5
+                const symbol = view.getBindingContext("yFinSearchResult")?.getObject("symbol") as unknown as string | undefined
                 if( symbol ) {
-                    this._getChartWithCache([apiKey, symbol, chartParams, abortController])
-                    //api_getChart(apiKey, symbol, chartParams, abortController )
+                    const doUseCache = this.appComponent.getProperty("useCache")
+                    const cacheInterval = this.appComponent.getProperty("cacheInterval")
+                    const apiCall = doUseCache ? this._getChartWithCache(cacheInterval)([apiKey, symbol, chartParams, abortController])
+                                               : api_getChart(apiKey, symbol, chartParams, abortController )
+                            apiCall
                             .then(result => {
                                 console.log("fetched data", result)
                                 const chartRaw = 

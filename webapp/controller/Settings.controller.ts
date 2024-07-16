@@ -1,26 +1,56 @@
-import Controller from "sap/ui/core/mvc/Controller";
 import History from "sap/ui/core/routing/History";
 import AppComponent from "../Component";
 import { Route$PatternMatchedEvent } from "sap/ui/core/routing/Route";
 import MessageToast from "sap/m/MessageToast";
 import JSONModel from "sap/ui/model/json/JSONModel";
-import Button, { Button$PressEvent } from "sap/m/Button";
+import { Button$PressEvent } from "sap/m/Button";
 import Input from "sap/m/Input";
 import accessTransactionsDB from "../services/transactionsDB";
 import * as saveAs from 'file-saver'
 import BaseController from "./Base.controller";
 import { FileUploader$ChangeEvent, FileUploader$UploadCompleteEvent } from "sap/ui/unified/FileUploader";
 import parseCsv from "../services/parseCsv";
-import TransactionsController from "./Transactions.controller";
 import TransactionEntry from "../types/TransactionEntry";
+import  MOViewDisplayEditModel  from "../managedobject/MOViewDisplayEditModel";
+import ManagedObjectModel from "sap/ui/model/base/ManagedObjectModel";
+import InputBase, { InputBase$ChangeEvent } from "sap/m/InputBase";
+import ManagedObject from "sap/ui/base/ManagedObject";
+import useCache from "../services/cacheService";
 
 function formatCsvDate(date:Date) {
   return `${date.getFullYear()}-${date.getMonth().toString().padStart(2,'0')}-${date.getDay().toString().padStart(2,'0')}}`
 }
 
-interface SettingsModel {
-  apiKey:string|null
-}
+// if you want to make it reactive yu have to use managedobjectmodel instead of JSONModel
+const SettingsManagedObject = ManagedObject.extend('rsh.watchlist.ui5.controller.SettingsManagedObject', {
+		metadata: {
+			properties: {
+				apiKey: {
+					type:"string",
+					bindable:true,
+					visibility:"public"
+				},
+				useCache: {
+					type:"boolean",
+					defaultValue:false,
+					bindable:true,
+					visibility:"public"
+				},
+				cacheInterval: {
+					type:"int",
+					defaultValue:60000,
+					bindable:true,
+					visibility:"public"
+				}
+      }
+		}
+	})
+
+//interface SettingsModel {
+//  apiKey:string|null
+//  useCache:boolean
+//  cacheInterval:number|undefined
+//}
 /**
  * @namespace rsh.watchlist.ui5.controller
  */
@@ -32,11 +62,16 @@ export default class Settings extends BaseController {
       // eslint-disable-next-line @typescript-eslint/unbound-method
       router.getRoute("settings")?.attachPatternMatched(this._onObjectMatched, this)
 
-      //const apiKey = localStorage.getItem(Settings.API_KEY_INPUT_ID)
-      const apiKey = (this.getOwnerComponent() as AppComponent).getApiKey()
-
       const view = this.getView()
-      view?.setModel(new JSONModel({apiKey:apiKey} as SettingsModel))
+  
+      // view sate model
+      view.setModel(new ManagedObjectModel(new MOViewDisplayEditModel()), "viewState")
+      view.getModel("viewState")?.setDefaultBindingMode("TwoWay") 
+      console.log(view.getModel("viewState"))
+      console.log(view.getModel("viewState")?.getProperty("/mode"))
+
+      // I'm going to use a local model for apiKey, cache etc. in order to be able to deliberatelly save using save button
+      this.reloadModel()
 
       const apiKeyInputObj = view?.byId(Settings.API_KEY_INPUT_ID)
       if(apiKeyInputObj) {
@@ -46,6 +81,21 @@ export default class Settings extends BaseController {
         console.warn("apiKeyInput not found, at least there will not be validity checks for this element.")
       }
 		}
+    private reloadModel() {
+      const view = this.getView()
+      const component = this.getOwnerComponent() as AppComponent
+      const componentModel = component.getModel("component")
+      const apiKey = componentModel.getProperty("/apiKey") as string
+      const useCache = componentModel.getProperty("/useCache") as boolean
+      const cacheInterval = componentModel.getProperty("/cacheInterval") as number | undefined
+
+      const localModel = new ManagedObjectModel(new SettingsManagedObject())
+      localModel.setProperty("/apiKey", apiKey)
+      localModel.setProperty("/useCache", useCache)
+      localModel.setProperty("/cacheInterval", cacheInterval)
+      view?.setModel(localModel)
+//      view?.setModel(new JSONModel({apiKey:apiKey, useCache:useCache, cacheInterval:cacheInterval} as SettingsModel))
+    }
 		private _onObjectMatched(oEvent:Route$PatternMatchedEvent):void {
       // here one can match and bind parameters passed to the route to a model
 //			const view = this.getView()
@@ -67,15 +117,27 @@ export default class Settings extends BaseController {
         const apiKey = model.getProperty("/apiKey")
         console.info("API Key saved: ", apiKey)
         const oInput:Input|undefined = this.getView()?.byId(Settings.API_KEY_INPUT_ID) as Input
+        (this.getOwnerComponent() as AppComponent).saveSettings(apiKey, model.getProperty("/useCache"), model.getProperty("/cacheInterval"))
         if(apiKey) {
-          (this.getOwnerComponent() as AppComponent).saveApiKey(apiKey)
-          MessageToast.show("{i18n>apiKeySaved}")
+          //(this.getOwnerComponent() as AppComponent).saveApiKey(apiKey)
+          MessageToast.show("{i18n>settingsSaved}")
           oInput.setValueState("Success")
+          const viewStateModel = this.getView()?.getModel("viewState") as ManagedObjectModel
+          viewStateModel.setProperty("/mode", "Display")
         } else {
           oInput.setValueState("Error")
           oInput.setValueStateText("{i18n>pleaseEnterApiKeyStateText}")
         }
       }
+    }
+    public onEdit() {
+      const viewStateModel = this.getView()?.getModel("viewState") as ManagedObjectModel
+      viewStateModel.setProperty("/mode", "Edit")
+    }
+    public onCancel() {
+      this.reloadModel()
+      const viewStateModel = this.getView()?.getModel("viewState") as ManagedObjectModel
+      viewStateModel.setProperty("/mode", "Display")
     }
     public onNavBack() {
 			const oHistory = History.getInstance();

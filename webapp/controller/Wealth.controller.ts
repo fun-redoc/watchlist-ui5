@@ -7,6 +7,10 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import TransactionEntry, {  } from "../types/TransactionEntry";
 import { YFinQuoteResult } from "../types/yFinApiTypes";
 import accessTransactionsDB from "../services/transactionsDB";
+import PullToRefresh, { PullToRefresh$RefreshEvent } from "sap/m/PullToRefresh";
+import MessageBox from "sap/m/MessageBox";
+import Popup from "sap/ui/core/Popup";
+import MessageToast from "sap/m/MessageToast";
 
 
 type WealthTotalsModel = {
@@ -171,14 +175,14 @@ export default class WealthController extends BaseController {
         return tl
     }
 
-    private _onRouteMatched(oEvent:Route$PatternMatchedEvent):void {
+    private _refreshModels():Promise<void> {
 			const view = this.getView()
             if(view) {
                 // TODO, it will turn out, that new transactions arent shown property without
                 //       reload. 2 Solutions 1) implement as managed model on component level
                 //                           2) implement signaling view component
                 //                           Fallback) refresh button (allways a good idea)
-                this._loadAllTransactions()
+                return this._loadAllTransactions()
                     .then(transactions => {
                         // compute aggregations
                         const timeLine = this._computeTimeline(transactions)
@@ -232,26 +236,30 @@ export default class WealthController extends BaseController {
                             totalFee:0
                         })
                         view.setModel(new JSONModel(totalsModel), WealthController.TOTALS_MODEL_NAME)
+                        return 
                     })
-                    .catch(reason => {
-                        console.error(reason)
-                        throw new Error("somtething wnt wrong. try again later.")
-                        // TODO:errorhandling showg error,  i18n error
-                    })
-
-//                console.log(oEvent)
-//                console.log(oEvent?.getParameter("arguments"))
-//                console.log((oEvent?.getParameter("arguments") as RoutParams).assetIdx)
-//                console.log("/" + window.decodeURIComponent((oEvent?.getParameter("arguments") as RoutParams).assetIdx))
-//                view.bindElement({
-//                    path: "/" + window.decodeURIComponent((oEvent?.getParameter("arguments") as RoutParams).assetIdx),
-//                    model: "yFinSearchResult"
-//                })
+//                    .catch(reason => {
+//                        console.error(reason)
+//                        throw new Error("somtething wnt wrong. try again later.")
+//                        // TODO:errorhandling showg error,  i18n error
+//                    })
             } else {
-                console.error("somtething wnt wrong. view is not bound. try again later.")
-                throw new Error("somtething wnt wrong. try again later.")
+                return new Promise((_,reject) => {
+                    reject("somtething wnt wrong. view is not bound. try again later.")
+                })
+//                console.error("somtething wnt wrong. view is not bound. try again later.")
+//                throw new Error("somtething wnt wrong. try again later.")
                 // TODO:errorhandling showg error,  i18n error
             }
+    }
+
+    private _onRouteMatched(_oEvent:Route$PatternMatchedEvent):void {
+        this._refreshModels()
+        .catch(reason=> {
+            console.error(reason)
+            // TODO:errorhandling showg error,  i18n error
+        })
+
     }
 
 
@@ -295,6 +303,20 @@ export default class WealthController extends BaseController {
 //			const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
 //			oRouter.navTo("detail");
     }
+    public handleRefresh(e:PullToRefresh$RefreshEvent) {
+        this._refreshModels()
+        .then(() => {
+            e.getSource().hide()
+            //(this.byId("pullToRefresh") as PullToRefresh).hide()
+        })
+        .catch((reason) => {
+            console.error(reason)
+            // TODO alert the user
+            e.getSource().hide()
+            //this.byId("pullToRefresh").hide()
+        })
+    }
+
     public getCurrentValueFormatted(price:number, stock:number, currency?:string) {
         return this.formatter.formatAsCurrency(price*stock, currency)
     }

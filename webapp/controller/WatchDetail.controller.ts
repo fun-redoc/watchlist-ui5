@@ -49,7 +49,7 @@ export default class WatchDetail extends BaseController {
                 console.error("somtething wnt wrong. appComponent is not set.")
                 throw new Error("somtething wnt wrong. try again later.")
             }
-            const apiKey = this.appComponent.getApiKey()
+            const apiKey = this.appComponent.getProperty("apiKey")
             if(!apiKey) {
                 console.error("somtething wnt wrong. apiKey is not set.")
                 // TODO i18n make i18n
@@ -59,12 +59,15 @@ export default class WatchDetail extends BaseController {
 			const view = this.getView()
             const mo = view?.getElementBinding("component")?.getBoundContext()?.getObject() as ManagedObject
             if(mo) {
+                const doUseCache = this.appComponent.getProperty("useCache")
+                console.log("DO USE CACHE", doUseCache)
                 const fetchBatchApi = api_getAssetBatch(apiKey)
                 const fetchBatchApiFn = fetchBatchApi.fetchBatch
-                const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:1000*60*5})
+                const fetchBatchApiFnCached = useCache<YFinQuoteResult[], typeof fetchBatchApiFn>(fetchBatchApiFn, {timeOutMillis:this.appComponent.getProperty("cacheInterval")})
                 const batch = [mo.getProperty("symbol")]
-                //fetchBatchApi.fetchBatch(batch,undefined) // TODO use abort controller to abort api call in case of premature leaving view 
-                fetchBatchApiFnCached([batch,undefined]) // TODO use abort controller to abort api call in case of premature leaving view 
+                const apiCall = !doUseCache ? fetchBatchApi.fetchBatch(batch,undefined) // TODO use abort controller to abort api call in case of premature leaving view 
+                                            : fetchBatchApiFnCached([batch,undefined]) // TODO use abort controller to abort api call in case of premature leaving view 
+                apiCall
                     .then( quotes => {
                             switch (quotes.length) {
                             case 0:

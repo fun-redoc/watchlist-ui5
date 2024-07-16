@@ -227,7 +227,7 @@ export default class TransactionBuy extends BaseController {
       return c1.valueOf() - c2.valueOf()
     }
 
-    private _fetchYFinQueryCached = useCache<YFinQuoteResult[], typeof fetchYFinQuery>(fetchYFinQuery, {timeOutMillis:1000*60*30})
+    private _fetchYFinQueryCached = (cacheInterval:number) =>  useCache<YFinQuoteResult[], typeof fetchYFinQuery>(fetchYFinQuery, {timeOutMillis:cacheInterval})
 
     private async _fetchAssetBaseDataAndStoreInViewModel(symbol:string) {
       // there is something wrong with the type defition of getParameter<never>)
@@ -237,10 +237,13 @@ export default class TransactionBuy extends BaseController {
         console.warn("no view found") 
         return
       }
-      const apiKey = (this.getOwnerComponent() as AppComponent).getApiKey()
+      const doUseCache = this.appComponent.getProperty("useCache")
+      const cacheInterval = this.appComponent.getProperty("cacheInterval")
+      const apiKey = (this.getOwnerComponent() as AppComponent).getProperty("apiKey")
       if(apiKey) {
-//                //fetchYFinQuery(apiKey, queryParam)
-        this._fetchYFinQueryCached([apiKey, queryParam])
+        const apiCall = !doUseCache ? fetchYFinQuery(apiKey, queryParam)
+                                    : this._fetchYFinQueryCached(cacheInterval)([apiKey, queryParam])
+        apiCall
           .then(async (response: YFinQuoteResult[]) => {
                         if(response.length > 0 ) {
                           if(response.length > 1) {

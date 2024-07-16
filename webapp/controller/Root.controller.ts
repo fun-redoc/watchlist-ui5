@@ -71,16 +71,18 @@ export default class Root extends Controller {
         }
     }
     public async onSearchAsset(e:Input$SubmitEvent) {
-        const fetchYFinQueryCached = useCache<YFinQuoteResult[], typeof fetchYFinQuery>(fetchYFinQuery, {timeOutMillis:1000*60*30})
+            const appComponent = this.getOwnerComponent() as AppComponent
+        const doUseCache = appComponent.getProperty("useCache")
+        const cacheInterval = appComponent.getProperty("cacheInterval")
+        const fetchYFinQueryCached = useCache<YFinQuoteResult[], typeof fetchYFinQuery>(fetchYFinQuery, {timeOutMillis:cacheInterval})
             // there is something wrong with the type defition of getParameter<never>)
 			const queryParam = (e.getParameters() as QueryParam)
-
             const view = this.getView()
-            const appComponent = this.getOwnerComponent() as AppComponent
-            const apiKey = (this.getOwnerComponent() as AppComponent).getApiKey()
+            const apiKey = appComponent.getProperty("apiKey")
             if(apiKey) {
-                //fetchYFinQuery(apiKey, queryParam)
-                fetchYFinQueryCached([apiKey, queryParam])
+                const apiCall = !doUseCache ? fetchYFinQuery(apiKey, queryParam)
+                                            : fetchYFinQueryCached([apiKey, queryParam])
+                apiCall
                     .then(response => {
                         //if(view) {
                         if(appComponent) {

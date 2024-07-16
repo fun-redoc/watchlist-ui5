@@ -23,8 +23,8 @@
 		<headerContent>
 			<OverflowToolbar width="100%" asyncMode="true">
 			<!--
-<MessageStrip text="Left and Right aligned content." class="sapUiTinyMargin"/>
--->
+			<MessageStrip text="Left and Right aligned content." class="sapUiTinyMargin"/>
+			-->
 				<Title text="{i18n>currentValue}" visible="{= ${component>/deviceType} !== 'Phone'}"></Title>
 				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
 				<ObjectNumber number="{parts: [{path:'wealthTotals>/currentValue'},{path:'wealthTotals>/currency'}], formatter:'.formatter.formatAsCurrency' }" state="Information"/>
@@ -51,7 +51,8 @@
 		<content>
 			<PullToRefresh
 				id="pullToRefresh"
-				refresh="handleRefresh" />
+				visible="{component>/deviceIsNotTouch}"
+				refresh=".handleRefresh" />
 			<f:GridList id="transactionList"
 				showNoData="true"
 				noDataText="{i18n>nothingToShow}"

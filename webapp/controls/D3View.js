@@ -1,7 +1,6 @@
 sap.ui.define([
-  "d3",
   "rsh/watchlist/ui5/controls/D3ViewBase"
-], function(d3, D3ViewBase) {
+], function(D3ViewBase) {
 
     function _monthDiff(d1, d2) {
         const _d1 = d1 || new Date()

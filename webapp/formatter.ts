@@ -18,6 +18,33 @@ export default function(rm?: ResourceModel) {
                 default: return status
             }
         },
+        formatMinutes: function(amt?:number): string {
+            // TODO make locale dependent
+            console.log("formatMinutes")
+            if(amt) {
+                return `${amt} min`
+            } else {
+                return '-'
+            }
+        },
+        formatAsTimeDuration: function(millis?:number): string {
+            if(millis) {
+                const remSeconds = Math.floor(millis / 1000)
+                const sec = remSeconds % 60
+                const strSec = (sec >= 1 ? String(sec) : "0").padStart(2,'0')
+                const remMin = Math.floor(remSeconds / 60)
+                const min = remMin % 60
+                const strMin = (min >= 1 ? String(min) : "0").padStart(2,'0')
+                const remHrs = Math.floor(remMin / 60)
+                const hrs = remHrs % 60
+                const strHrs = (hrs >= 1 ? String(hrs) : "0").padStart(2,'0')
+                const remDays = Math.floor(remHrs / 24)
+                const strDays = (remDays >= 1 ? String(remDays)+':' : "") 
+                return `${strDays}${strHrs}:${strMin}:${strSec}`
+            } else {
+                return '-'
+            }
+        },
         formatAsCurrency: function(amt?:number, cur?:string): string {
             if(amt) {
                 const cur1 = cur ||  "XXX" // XXX is no currency according to https://en.wikipedia.org/wiki/ISO_4217#List_of_ISO_4217_currency_codes

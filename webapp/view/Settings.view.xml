@@ -1,8 +1,11 @@
-<mvc:View 
+<mvc:View xmlns:form="sap.ui.layout.form" 
       xmlns:layout="sap.ui.layout"   
+      xmlns:core="sap.ui.core"
       xmlns="sap.m"
+			xmlns:f="sap.f"
       xmlns:mvc="sap.ui.core.mvc"
 			xmlns:u="sap.ui.unified"
+      core:require="{IntegerType: 'sap/ui/model/type/Integer'}"
 			controllerName="rsh.watchlist.ui5.controller.Settings"
 >
 	<Page 	title="{i18n>settingsPageTitle}"
@@ -10,33 +13,159 @@
 			navButtonPress=".onNavBack"	
 	>
   <content>
-    <Label text="{i18n>apiKeyLabel}" labelFor="apiKeyInput"/>
-    <Input id="apiKeyInput"
-            type="Text"
-            placeholder="{i18n>enterApiKeyPlaceholderTet}"
-            value="{ path: '/apiKey', type: 'sap.ui.model.type.String', constraints: {minLength:1} }"
-    />
-		<u:FileUploader
-			id="fileDownloader"
-			name="myFileDownload"
-      multiple="false"
-      buttonText="{i18n>csvLoad}"
-			tooltip="Download your transactions from a local file"
-			buttonOnly="true"
-      icon="sap-icon://download"
-			uploadComplete="onUploadComplete"
-			change="handleUploadPress"
-		/>
-    <Button id="deleteSavedTransactions" text="{i18n>DeleteAllSavedTransactions}" icon="sap-icon://delete" press=".onDeleteAllTransactions"></Button>
-    <Button text="{i18n>SaveTransactionsToCsv}" 
-      icon="sap-icon://upload"
-      press=".onSaveTransactionsCSV"></Button>
+  <VBox visible="{= ${viewState>/mode} === 'Display'}" class="sapUiSmallMargin">
+		<form:SimpleForm
+			editable="false"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="4"
+			labelSpanL="3"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="4"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="1"
+			columnsM="1"
+			singleContainerFullSize="false" >
+			<form:content>
+				<core:Title text="{i18n>ApiKey}" />
+				<Label text="{i18n>yourAPIKey}" />
+				<Text text="{/apiKey}" />
+				<core:Title text="{i18n>loadTransactions}" />
+				<Label text="{i18n>uploadTransactions}" />
+				<Text text="{i18n>switchToEditMode}" />
+				<core:Title text="{i18n>cacheManagement}" />
+				<Label text="" />
+        <CheckBox enabled="false" text="{i18n>useCache}" selected="{/useCache}"></CheckBox>
+        <Input enabled="false"
+                placeholder="{i18n>cacheIntervalInMinutes}"
+                value="{/cacheInterval}"
+                visible="{= ${/useCache}}"></Input>
+			</form:content>
+		</form:SimpleForm>
+	</VBox>
+  <VBox visible="{= ${viewState>/mode} === 'Edit'}" class="sapUiSmallMargin">
+		<form:SimpleForm
+			editable="true"
+			layout="ResponsiveGridLayout"
+			labelSpanXL="2"
+			labelSpanL="3"
+			labelSpanM="4"
+			labelSpanS="12"
+			adjustLabelSpan="false"
+			emptySpanXL="0"
+			emptySpanL="0"
+			emptySpanM="0"
+			emptySpanS="0"
+			columnsXL="2"
+			columnsL="1"
+			columnsM="1"
+			singleContainerFullSize="false" >
+			<form:content>
+				<core:Title text="{i18n>ApiKey}" />
+				<Label text="{i18n>yourAPIKey}"  labelFor="apiKeyInput"/>
+        <Input  id="apiKeyInput"
+                type="Text"
+                placeholder="{i18n>enterApiKeyPlaceholderTet}"
+                value="{ path: '/apiKey', type: 'sap.ui.model.type.String', constraints: {minLength:1} }"
+        />
+
+				<core:Title text="{i18n>loadTransactions}" />
+				<Label text="" />
+        <u:FileUploader
+          width="100%"
+          name="myFileDownload"
+          multiple="false"
+          buttonText="{i18n>csvLoad}"
+          tooltip="Download your transactions from a local file"
+          buttonOnly="true"
+          icon="sap-icon://download"
+          uploadComplete="onUploadComplete"
+          change="handleUploadPress"
+        />
+        <Button text="{i18n>DeleteAllSavedTransactions}" icon="sap-icon://delete" press=".onDeleteAllTransactions"></Button>
+        <Button text="{i18n>SaveTransactionsToCsv}" 
+          icon="sap-icon://upload"
+          press=".onSaveTransactionsCSV"></Button>
+
+        <core:Title text="{i18n>cacheManagement}" />
+				<Label text="" />
+        <CheckBox text="{i18n>useCache}" selected="{/useCache}"></CheckBox>
+				<Label text="{i18n>cacheIntervalInMilliseconds}" visible="{= ${/useCache}}"/>
+        <Input  placeholder="{i18n>cacheIntervalInMinutes}"
+                type="Number"
+              value="{
+                path: '/cacheInterval',
+                type: 'IntegerType',
+                formatOptions: {
+                  emptyString: 0
+                },
+                constraints: {
+                  minimum: 0,
+                  maximum: '{= 1000*60*60*24}'
+                }
+              }"
+              visible="{= ${/useCache}}"
+              valueLiveUpdate="true"
+              />
+        <Text visible="{= ${/useCache}}" text="{path: '/cacheInterval', formatter:'.formatter.formatAsTimeDuration'}"></Text>
+			</form:content>
+		</form:SimpleForm>
+  </VBox>
+  <!--
+  <VBox visible="false">
+  <form:SimpleForm >
+  <form:content>
+    <HBox width="100%">
+      <Label vAlign="Middle" width="8rem" text="{i18n>apiKeyLabel}" labelFor="apiKeyInput"/>
+      <Input id="apiKeyInput"
+              width="28rem"
+              type="Text"
+              placeholder="{i18n>enterApiKeyPlaceholderTet}"
+              value="{ path: '/apiKey', type: 'sap.ui.model.type.String', constraints: {minLength:1} }"
+      />
+    </HBox>
+    <HBox width="100%" >
+      <Label vAlign="Middle" width="8rem" text="{i18n>uploadTransactions}" labelFor="fileDownloader"/>
+      <u:FileUploader
+        id="fileDownloader"
+        name="myFileDownload"
+        multiple="false"
+        buttonText="{i18n>csvLoad}"
+        tooltip="Download your transactions from a local file"
+        buttonOnly="true"
+        icon="sap-icon://download"
+        uploadComplete="onUploadComplete"
+        change="handleUploadPress"
+      />
+      <Button id="deleteSavedTransactions" text="{i18n>DeleteAllSavedTransactions}" icon="sap-icon://delete" press=".onDeleteAllTransactions"></Button>
+      <Button text="{i18n>SaveTransactionsToCsv}" 
+        icon="sap-icon://upload"
+        press=".onSaveTransactionsCSV"></Button>
+    </HBox>
+    <HBox >
+      <Label vAlign="Middle" width="8rem" text="{i18n>cacheSettings}" labelFor="apiKeyInput"/>
+      <CheckBox id="checkUseCache" text="{i18n>useCache}" selected="{component>/useCache}"></CheckBox>
+      <Input id="inputCacheInterval" 
+              placeholder="{i18n>cacheIntervalInMinutes}"
+              value="{component>/cacheInterval}"
+              visible="{= ${component>/useCache}}"></Input>
+      <Label textAlign="Center"  width="2rem" text="{i18n>minutesShort}"/>
+    </HBox>
+  </form:content>
+  </form:SimpleForm>
+  </VBox>
+  -->
   </content>
   <footer>
     <OverflowToolbar>
       <ToolbarSpacer/>
-        <OverflowToolbarButton icon="sap-icon://save" text="{i18n>save}" press="onSave"/>
-        <OverflowToolbarButton icon="sap-icon://cancel" />
+        <OverflowToolbarButton visible="{= ${viewState>/mode} === 'Display'}" icon="sap-icon://edit" text="{i18n>/edit}" press="onEdit"/>
+        <OverflowToolbarButton visible="{= ${viewState>/mode} === 'Edit'}" icon="sap-icon://save" text="{i18n>save}" press="onSave"/>
+        <OverflowToolbarButton visible="{= ${viewState>/mode} === 'Edit'}" icon="sap-icon://cancel" text="{i18n>Abort}" press="onCancel" />
     </OverflowToolbar>
   </footer>
 	</Page>
