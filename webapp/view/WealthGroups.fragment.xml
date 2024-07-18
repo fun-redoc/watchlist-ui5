@@ -1,0 +1,40 @@
+<core:FragmentDefinition 
+			xmlns:tnt="sap.tnt"
+			xmlns="sap.m"
+            xmlns:mvc="sap.ui.core.mvc"
+			xmlns:core="sap.ui.core"
+			xmlns:f="sap.ui.layout.form"
+			xmlns:u="sap.ui.unified"
+			xmlns:rshcontrols="rsh.watchlist.ui5.control"
+			height="100%"
+>
+<List id="transactionList"
+	headerText="{i18n>WealthGroupedByOrderType}"
+	class="sapUiResponsiveMargin"
+	width="auto"
+	items="{ path: 'wealth>/',
+			sorter: [{ path: 'yFinData/quoteType', group:true },{path:'symbol', group:false}],
+						groupHeaderFactory: '.getGroupByQuoteTypeHeader'}" 
+>
+	<headerToolbar>
+	<Toolbar>
+		<Title text="{i18n>WealthGroupedByOrderTypeToolbarTitle}"/>
+		<ToolbarSpacer/>
+		<SearchField width="50%" search="onFilter" selectOnFocus="false" placeholder="{i18n>TODONotYetImplemented}"/>
+	</Toolbar>
+	</headerToolbar>
+	<items>
+		<ObjectListItem
+			title="{path: 'wealth>yFinData/symbol'}"
+			number="{
+				parts: [{path: 'wealth>'}],
+				formatter: '.getCurrentYieldWithFormat'
+			}"
+			numberState="{path: 'wealth>', formatter: '.getCurrentYieldState'}"
+			type="Navigation"
+			press="onPress"
+		>
+		</ObjectListItem>
+	</items>
+</List>
+</core:FragmentDefinition>

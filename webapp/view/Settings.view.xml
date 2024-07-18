@@ -115,50 +115,6 @@
 			</form:content>
 		</form:SimpleForm>
   </VBox>
-  <!--
-  <VBox visible="false">
-  <form:SimpleForm >
-  <form:content>
-    <HBox width="100%">
-      <Label vAlign="Middle" width="8rem" text="{i18n>apiKeyLabel}" labelFor="apiKeyInput"/>
-      <Input id="apiKeyInput"
-              width="28rem"
-              type="Text"
-              placeholder="{i18n>enterApiKeyPlaceholderTet}"
-              value="{ path: '/apiKey', type: 'sap.ui.model.type.String', constraints: {minLength:1} }"
-      />
-    </HBox>
-    <HBox width="100%" >
-      <Label vAlign="Middle" width="8rem" text="{i18n>uploadTransactions}" labelFor="fileDownloader"/>
-      <u:FileUploader
-        id="fileDownloader"
-        name="myFileDownload"
-        multiple="false"
-        buttonText="{i18n>csvLoad}"
-        tooltip="Download your transactions from a local file"
-        buttonOnly="true"
-        icon="sap-icon://download"
-        uploadComplete="onUploadComplete"
-        change="handleUploadPress"
-      />
-      <Button id="deleteSavedTransactions" text="{i18n>DeleteAllSavedTransactions}" icon="sap-icon://delete" press=".onDeleteAllTransactions"></Button>
-      <Button text="{i18n>SaveTransactionsToCsv}" 
-        icon="sap-icon://upload"
-        press=".onSaveTransactionsCSV"></Button>
-    </HBox>
-    <HBox >
-      <Label vAlign="Middle" width="8rem" text="{i18n>cacheSettings}" labelFor="apiKeyInput"/>
-      <CheckBox id="checkUseCache" text="{i18n>useCache}" selected="{component>/useCache}"></CheckBox>
-      <Input id="inputCacheInterval" 
-              placeholder="{i18n>cacheIntervalInMinutes}"
-              value="{component>/cacheInterval}"
-              visible="{= ${component>/useCache}}"></Input>
-      <Label textAlign="Center"  width="2rem" text="{i18n>minutesShort}"/>
-    </HBox>
-  </form:content>
-  </form:SimpleForm>
-  </VBox>
-  -->
   </content>
   <footer>
     <OverflowToolbar>

@@ -7,10 +7,12 @@ import JSONModel from "sap/ui/model/json/JSONModel";
 import TransactionEntry, {  } from "../types/TransactionEntry";
 import { YFinQuoteResult } from "../types/yFinApiTypes";
 import accessTransactionsDB from "../services/transactionsDB";
-import PullToRefresh, { PullToRefresh$RefreshEvent } from "sap/m/PullToRefresh";
-import MessageBox from "sap/m/MessageBox";
-import Popup from "sap/ui/core/Popup";
-import MessageToast from "sap/m/MessageToast";
+import { PullToRefresh$RefreshEvent } from "sap/m/PullToRefresh";
+import { Button$PressEvent } from "sap/m/Button";
+import GroupHeaderListItem from "sap/m/GroupHeaderListItem";
+import TransactionsController from "./Transactions.controller";
+import Page from "sap/m/Page";
+import Control from "sap/ui/core/Control";
 
 
 type WealthTotalsModel = {
@@ -57,6 +59,11 @@ interface RoutParams {
 interface QueryParam {
     query:string
 }
+
+function isNotArray<T>(c: T|T[]): c is T {
+    return !Array.isArray(c)
+}
+
 /**
  * @namespace rsh.watchlist.ui5.controller
  */
@@ -365,6 +372,70 @@ export default class WealthController extends BaseController {
         .catch(reason => {
             console.warn(`something wrong happened for ${ctx.aggregations.symbol}:`, reason)
             return 'n.a.'
+        })
+    }
+    public getGroupByQuoteTypeHeader(group:any):GroupHeaderListItem {
+        type GroupAggregations = {totalCost:number, totalValue:number, totalYeald:number, currency:string|undefined, valid:boolean}
+        const model = this.getView().getModel(WealthController.MODEL_NAME).getObject("/") as WealthControllerModel
+        const groupMembers = model.filter(entry => entry.yFinData.quoteType === group.key)
+        if(groupMembers.length > 0) {
+            const groupName = groupMembers.at(0).yFinData.quoteType
+            const aggregations:GroupAggregations = groupMembers.reduce(
+                (acc:GroupAggregations, w:WealthAsset)  => {
+                    acc.totalCost += w.aggregations.totalCostValue +w.aggregations.totalBuyFee
+                    acc.totalValue += w.aggregations.amountInStock*w.yFinData.regularMarketPrice
+                    acc.totalYeald += w.aggregations.totalYealdOnSold - w.aggregations.totalSellFee
+                    if(w.aggregations.currency != w.yFinData.currency) {
+                        console.warn("currencies do not match in transactions and yfin data. Results of calculation may be invcorrect")
+                    }
+                    if(!acc.currency) {
+                        acc.currency = w.yFinData.currency
+                    }
+                    if(acc.currency && acc.currency != w.yFinData.currency) {
+                        console.warn("currency not identical among the members of the group, result may be invalid")
+                        // TODO inform the unser in status
+                    }
+                    return acc
+                },
+                {totalCost:0, totalValue:0, totalYeald:0, currency:undefined, valid:true } as GroupAggregations
+            )
+            if(aggregations.valid) {
+                return new GroupHeaderListItem({
+                    title : groupName ? `${groupName}:  ${this.formatter.formatAsCurrency(aggregations.totalCost, aggregations.currency)} ${this.formatter.formatAsCurrency(aggregations.totalValue, aggregations.currency)}` : group.key
+                })
+            } else {
+                // fallback in case of empty group for what so ever reason
+                return new GroupHeaderListItem({
+                    title :  group.key
+                })
+            }
+        } else {
+            // fallback in case of empty group for what so ever reason
+            console.warn("empty group for ", group.key)
+            return new GroupHeaderListItem({
+                title :  group.key
+            })
+        }
+    }
+    public onPressGroup(e:Button$PressEvent) {
+        this.loadFragment({
+            name: "rsh.watchlist.ui5.view.WealthGroups",
+            type: "XML"
+        }).then(fragment => {
+            const oldFragment = this.byId("wealthCardsFragment--content") 
+            oldFragment.removeAllDependents()
+            oldFragment.destroy()
+            const page = this.byId("page") as Page
+            if(isNotArray<Control>(fragment)) {
+                page.addContent(fragment)
+            } else {
+                fragment.forEach(c => {
+                    page.addContent(c)
+                })
+            }
+        }).catch(reason => {
+            console.error(reason)
+            // TODO maybe inform user that something went wrong
         })
     }
 }

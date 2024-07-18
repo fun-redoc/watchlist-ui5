@@ -1,0 +1,74 @@
+ <core:FragmentDefinition
+	xmlns:layout="sap.ui.layout" 
+	xmlns:uxap="sap.uxap" 
+	xmlns:tnt="sap.tnt"
+	xmlns="sap.m"
+	xmlns:f="sap.f"
+	xmlns:mvc="sap.ui.core.mvc"
+	xmlns:core="sap.ui.core"
+	xmlns:rshcontrols="rsh.watchlist.ui5.control"
+	xmlns:form="sap.ui.layout.form"
+	xmlns:u="sap.ui.unified"
+	xmlns:grid="sap.ui.layout.cssgrid"
+	xmlns:ui="sap.ui"				
+>
+
+<f:GridList 
+				
+	id="content"
+	showNoData="true"
+	noDataText="{i18n>nothingToShow}"
+	width="100%"
+	class="sapUiNoMargin sapUiNoContentPadding" 
+	items="{ path: 'wealth>/',
+	sorter: { path: 'aggregations/symbol', group:false }}" >
+
+		<f:customLayout>
+			<grid:GridBoxLayout boxesPerRowConfig="XL4 L3 M2 S1"/>
+		</f:customLayout>
+
+		<f:GridListItem >
+			<ObjectHeader
+				showTitleSelector="false"
+				titleActive="true"
+				titleLevel="Auto"
+				title="{wealth>aggregations/symbol}"
+				intro="{= ${wealth>yFinData/longName} || ${wealth>yFinData/shortName}}"
+				number="{
+					parts:[{path:'wealth>'}],
+					formatter:'.getCurrentYieldWithFormat'
+				}"
+				numberState="{path: 'wealth>', formatter: '.getCurrentYieldState'}"
+				titlePress=".onPress"
+			>
+				<attributes>
+					<ObjectAttribute 
+						title="{i18n>averageBuyPrice}"
+						text="{parts: [{path: 'wealth>aggregations/'}], formatter:'.getAverageBuyPrice'}"
+					/>
+					<ObjectAttribute 
+						title="{i18n>totalCostValue}"
+						text="{parts: [{path: 'wealth>aggregations/totalCostValue'},{path: 'wealth>aggregations/currency'}], formatter:'.formatter.formatAsCurrency'}"
+					/>
+					<ObjectAttribute 
+						title="{i18n>regularMarketPrice}"
+						text="{parts: [{path: 'wealth>yFinData/regularMarketPrice'},{path: 'wealth>yFinData/currency'}], formatter:'.formatter.formatAsCurrency'}"
+					/>
+					<ObjectAttribute
+						title="{i18n>currentValue}"
+						text="{parts: [{path: 'wealth>yFinData/regularMarketPrice'},{path: 'wealth>aggregations/amountInStock'}], formatter:'.getCurrentValueFormatted' }"
+					/>
+					<ObjectAttribute text="{i18n>Amount} {wealth>aggregations/amountInStock}" />
+					<ObjectAttribute text="{i18n>totalBuyFee} {parts:[{path: 'wealth>aggregations/totalBuyFee'},{path:'wealth>aggregations/currency'}], formatter:'.formatter.formatAsCurrency'}" />
+					<ObjectAttribute text="{i18n>totalSellFee} {wealth>aggregations/totalSellFee}" />
+					<ObjectAttribute text="{i18n>totalYealdOnSold} {wealth>aggregations/totalYealdOnSold}" />
+					<ObjectAttribute
+						title="Link "
+						text="www.sap.com"
+						active="true"
+						press="handleLinkObjectAttributePress" />
+				</attributes>
+			</ObjectHeader>
+		</f:GridListItem>
+</f:GridList>
+</core:FragmentDefinition>

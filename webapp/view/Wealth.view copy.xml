@@ -1,0 +1,127 @@
+<!-- i'm failing to make core:require=formatter below work, thus using formatter over controller-->
+<mvc:View xmlns:layout="sap.ui.layout" xmlns:uxap="sap.uxap" xmlns:tnt="sap.tnt"   xmlns="sap.m"
+			xmlns:f="sap.f"
+            xmlns:mvc="sap.ui.core.mvc"
+			xmlns:core="sap.ui.core"
+			xmlns:rshcontrols="rsh.watchlist.ui5.control"
+			xmlns:form="sap.ui.layout.form"
+			xmlns:u="sap.ui.unified"
+			xmlns:grid="sap.ui.layout.cssgrid"
+			xmlns:ui="sap.ui"
+			controllerName="rsh.watchlist.ui5.controller.Wealth"
+			core:require="{formatter: 'formatter'}"
+			height="100%"
+>
+	<Page 	title="{i18n>WealthTitle}"
+			showNavButton="true"
+			navButtonPress=".onNavBack"	
+			showHeader="true"
+			showSubHeader="true"
+			showFooter="false"
+			class="sapUiContentPadding--header" 
+	>
+		<headerContent>
+			<OverflowToolbar width="100%" asyncMode="true">
+			<!--
+			<MessageStrip text="Left and Right aligned content." class="sapUiTinyMargin"/>
+			-->
+									<ToolbarSpacer />
+									<SearchField width="12rem" placeholder="{i18n>notYetImplemented}"/>
+									<ToolbarSpacer width="1rem" />
+									<SegmentedButton>
+										<items>
+											<SegmentedButtonItem icon="sap-icon://table-view" />
+											<SegmentedButtonItem icon="sap-icon://bar-chart" />
+										</items>
+									</SegmentedButton>
+									<ToolbarSpacer width="1rem" />
+									<Button icon="sap-icon://group-2" type="Transparent" press=".onPressGroup"/>
+			</OverflowToolbar>
+		</headerContent>
+		<subHeader>
+		<OverflowToolbar >
+				<Title text="{i18n>currentValue}" visible="{= ${component>/deviceType} !== 'Phone'}"></Title>
+				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
+				<ObjectNumber number="{parts: [{path:'wealthTotals>/currentValue'},{path:'wealthTotals>/currency'}], formatter:'.formatter.formatAsCurrency' }" state="Information"/>
+				<ToolbarSpacer/>
+
+				<Title text="{i18n>costOfPurchase}" visible="{= ${component>/deviceType} !== 'Phone'}"></Title>
+				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
+				<ObjectNumber visible="{= ${component>/deviceType} !== 'Phone'}"
+							  number="{parts: [{path: 'wealthTotals>/cost'},{path:'wealthTotals>/currency'}], formatter:'.formatter.formatAsCurrency' }" state="Information"/>
+				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
+
+				<Title text="{i18n>currentYield}" visible="{= ${component>/deviceType} !== 'Phone'}"></Title>
+				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
+				<ObjectNumber visible="{= ${component>/deviceType} !== 'Phone'}"
+							  number="{parts: [{path: 'wealthTotals>/currentYield'},{path: 'wealthTotals>/currency'}], formatter:'.formatter.formatAsCurrency' }" state="{=${wealthTotals>/currentYield} > 0 ? 'Success' : 'Error'}"/>
+				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
+
+				<Title text="{i18n>currentYieldPercent}" visible="{= ${component>/deviceType} !== 'Phone'}"></Title>
+				<ToolbarSpacer visible="{= ${component>/deviceType} !== 'Phone'}"/>
+				<ObjectNumber number="{path: 'wealthTotals>/currentYieldPercent', formatter:'.formatter.formatPercentFromDecimal' }" state="{=${wealthTotals>/currentYield} > 0 ? 'Success' : 'Error'}"/>
+		</OverflowToolbar>
+		</subHeader>
+		<content>
+			<PullToRefresh
+				id="pullToRefresh"
+				visible="{component>/deviceIsNotTouch}"
+				refresh=".handleRefresh" />
+			<f:GridList id="transactionList"
+				showNoData="true"
+				noDataText="{i18n>nothingToShow}"
+				width="100%"
+				class="sapUiNoMargin sapUiNoContentPadding" 
+				items="{ path: 'wealth>/',
+						sorter: { path: 'aggregations/symbol', group:false }}" >
+				<f:customLayout>
+					<grid:GridBoxLayout boxesPerRowConfig="XL4 L3 M2 S1"/>
+				</f:customLayout>
+
+				<f:GridListItem >
+					<ObjectHeader
+						showTitleSelector="false"
+						titleActive="true"
+						titleLevel="Auto"
+						title="{wealth>aggregations/symbol}"
+						intro="{= ${wealth>yFinData/longName} || ${wealth>yFinData/shortName}}"
+						number="{
+							parts:[{path:'wealth>'}],
+							formatter:'.getCurrentYieldWithFormat'
+						}"
+						numberState="{path: 'wealth>', formatter: '.getCurrentYieldState'}"
+						titlePress=".onPress"
+					>
+						<attributes>
+							<ObjectAttribute 
+								title="{i18n>averageBuyPrice}"
+								text="{parts: [{path: 'wealth>aggregations/'}], formatter:'.getAverageBuyPrice'}"
+							/>
+							<ObjectAttribute 
+								title="{i18n>totalCostValue}"
+								text="{parts: [{path: 'wealth>aggregations/totalCostValue'},{path: 'wealth>aggregations/currency'}], formatter:'.formatter.formatAsCurrency'}"
+							/>
+							<ObjectAttribute 
+								title="{i18n>regularMarketPrice}"
+								text="{parts: [{path: 'wealth>yFinData/regularMarketPrice'},{path: 'wealth>yFinData/currency'}], formatter:'.formatter.formatAsCurrency'}"
+							/>
+							<ObjectAttribute
+								title="{i18n>currentValue}"
+								text="{parts: [{path: 'wealth>yFinData/regularMarketPrice'},{path: 'wealth>aggregations/amountInStock'}], formatter:'.getCurrentValueFormatted' }"
+							/>
+							<ObjectAttribute text="{i18n>Amount} {wealth>aggregations/amountInStock}" />
+							<ObjectAttribute text="{i18n>totalBuyFee} {parts:[{path: 'wealth>aggregations/totalBuyFee'},{path:'wealth>aggregations/currency'}], formatter:'.formatter.formatAsCurrency'}" />
+							<ObjectAttribute text="{i18n>totalSellFee} {wealth>aggregations/totalSellFee}" />
+							<ObjectAttribute text="{i18n>totalYealdOnSold} {wealth>aggregations/totalYealdOnSold}" />
+							<ObjectAttribute
+								title="Link "
+								text="www.sap.com"
+								active="true"
+								press="handleLinkObjectAttributePress" />
+						</attributes>
+					</ObjectHeader>
+				</f:GridListItem>
+			</f:GridList>
+		</content>
+	</Page>
+</mvc:View>
