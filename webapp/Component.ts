@@ -169,19 +169,25 @@ export default class AppComponent extends UIComponent {
 		})
 		this.getModel("component")?.refresh()
 	}
+	private isAlreadyWatched(watch:WatchStock):boolean {
+		const xs = this.getAggregation("watchlist") as ManagedObject[]
+		return xs.find(x => x.getProperty("symbol") === watch.symbol) !== undefined
+	}
 	public async addToWatch(watch:WatchStock): Promise<void> {
-		try {
-			const dbManager = await this.getWatchDBM()
-			const _= await dbManager.add(watch)
-			const mo = new MOWatchStock() // found no way to create a ManagedObject as proper typescript class
-			mo.setProperty("symbol",watch.symbol) 
-			mo.setProperty("name",watch.name)
-			mo.setAggregation("watchSince",watch.watchSince)
-			this.addAggregation("watchlist", mo)
-			this.getModel("component")?.refresh()
-		} catch(err) {
-			console.error(err)
-			return new Promise((_,reject) => reject(err))
+		if(!this.isAlreadyWatched(watch)) {
+			try {
+				const dbManager = await this.getWatchDBM()
+				const _= await dbManager.add(watch)
+				const mo = new MOWatchStock() // found no way to create a ManagedObject as proper typescript class
+				mo.setProperty("symbol",watch.symbol) 
+				mo.setProperty("name",watch.name)
+				mo.setAggregation("watchSince",watch.watchSince)
+				this.addAggregation("watchlist", mo)
+				this.getModel("component")?.refresh()
+			} catch(err) {
+				console.error(err)
+				return new Promise((_,reject) => reject(err))
+			}
 		}
     }
 	public async addToYFinPool(symbol:Symbol[], filter:YFinPoolFilter): Promise<void> {

@@ -71,20 +71,21 @@ export default class Root extends Controller {
         }
     }
     public async onSearchAsset(e:Input$SubmitEvent) {
-            const appComponent = this.getOwnerComponent() as AppComponent
+        const queryParam = (e.getParameters() as QueryParam)
+        if(queryParam.query.length === 0) return
+
+        const appComponent = this.getOwnerComponent() as AppComponent
         const doUseCache = appComponent.getProperty("useCache")
         const cacheInterval = appComponent.getProperty("cacheInterval")
         const fetchYFinQueryCached = useCache<YFinQuoteResult[], typeof fetchYFinQuery>(fetchYFinQuery, {timeOutMillis:cacheInterval})
-            // there is something wrong with the type defition of getParameter<never>)
-			const queryParam = (e.getParameters() as QueryParam)
-            const view = this.getView()
-            const apiKey = appComponent.getProperty("apiKey")
+        // there is something wrong with the type defition of getParameter<never>)
+        const view = this.getView()
+        const apiKey = appComponent.getProperty("apiKey")
             if(apiKey) {
                 const apiCall = !doUseCache ? fetchYFinQuery(apiKey, queryParam)
                                             : fetchYFinQueryCached([apiKey, queryParam])
                 apiCall
                     .then(response => {
-                        //if(view) {
                         if(appComponent) {
                             const jsonModel =new JSONModel(response)
                             console.log("setting app component model to", jsonModel)

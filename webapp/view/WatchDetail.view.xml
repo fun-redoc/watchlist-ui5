@@ -49,7 +49,7 @@
 										backgroundDesign="Solid" >
 						<content>
 						<OverflowToolbar >
-							<Button text="{i18n>Buy}"></Button>
+							<Button text="{i18n>Buy}" press=".onBuy"></Button>
 							<Button text="{i18n>Unwatch}"></Button>
 						</OverflowToolbar>
 						</content>

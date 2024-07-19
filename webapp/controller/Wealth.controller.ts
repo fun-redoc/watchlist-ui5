@@ -417,10 +417,33 @@ export default class WealthController extends BaseController {
             })
         }
     }
+    public onPressCards(e:Button$PressEvent) {
+        this.loadFragment({
+            name: "rsh.watchlist.ui5.view.WealthCards",
+            type: "XML",
+            id:"wealthCardsFragment"
+        }).then(fragment => {
+            const oldFragment = this.byId("wealthCardsFragment--groups-content") 
+            oldFragment.removeAllDependents()
+            oldFragment.destroy()
+            const page = this.byId("page") as Page
+            if(isNotArray<Control>(fragment)) {
+                page.addContent(fragment)
+            } else {
+                fragment.forEach(c => {
+                    page.addContent(c)
+                })
+            }
+        }).catch(reason => {
+            console.error(reason)
+            // TODO maybe inform user that something went wrong
+        })
+    }
     public onPressGroup(e:Button$PressEvent) {
         this.loadFragment({
             name: "rsh.watchlist.ui5.view.WealthGroups",
-            type: "XML"
+            type: "XML",
+            id:"wealthCardsFragment"
         }).then(fragment => {
             const oldFragment = this.byId("wealthCardsFragment--content") 
             oldFragment.removeAllDependents()

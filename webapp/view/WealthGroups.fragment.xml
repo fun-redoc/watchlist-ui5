@@ -8,7 +8,7 @@
 			xmlns:rshcontrols="rsh.watchlist.ui5.control"
 			height="100%"
 >
-<List id="transactionList"
+<List id="groups-content"
 	headerText="{i18n>WealthGroupedByOrderType}"
 	class="sapUiResponsiveMargin"
 	width="auto"

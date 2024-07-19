@@ -6,6 +6,7 @@ import { api_getAssetBatch } from "../services/yFinApiService";
 import { YFinQuoteResult } from "../types/yFinApiTypes";
 import useCache from "../services/cacheService";
 import MessageToast from "sap/m/MessageToast";
+import { Button$PressEvent } from "sap/m/Button";
 
 interface RoutParams {
     assetIdx:string
@@ -97,5 +98,23 @@ export default class WatchDetail extends BaseController {
                         })
                 }
                 //mo.setProperty("ask", 4711.0815) // testing
+        }
+        private _getBoundOubjectFromModel():ManagedObject|undefined {
+            const binding = this.getView()?.getElementBinding("component")
+            const path = binding?.getPath()
+            const object:ManagedObject|undefined = binding?.getModel()?.getObject(path || "") as ManagedObject|undefined
+            return object
+        }
+        public onBuy(e:Button$PressEvent) {
+            const object = this._getBoundOubjectFromModel()
+            console.log("onBuy", object)
+            if(object) {
+                this.onNavigate("transactionBuy", e, {symbol:object.getProperty("symbol")})
+            } else {
+                this.getI18nResourceBundle()
+                    .then(rb => 
+                        MessageToast.show(rb?.getText("genericUserErrorMessage") || "An error happened, try again later")
+                    )
+            }
         }
 }
