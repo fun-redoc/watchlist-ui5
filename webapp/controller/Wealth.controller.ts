@@ -10,7 +10,6 @@ import accessTransactionsDB from "../services/transactionsDB";
 import { PullToRefresh$RefreshEvent } from "sap/m/PullToRefresh";
 import { Button$PressEvent } from "sap/m/Button";
 import GroupHeaderListItem from "sap/m/GroupHeaderListItem";
-import TransactionsController from "./Transactions.controller";
 import Page from "sap/m/Page";
 import Control from "sap/ui/core/Control";
 
@@ -86,7 +85,6 @@ export default class WealthController extends BaseController {
 		this.dbm = accessTransactionsDB()
         route?.attachPatternMatched(this._onRouteMatched, this)
     }
-
     private async _loadAllTransactions() : Promise<TransactionEntry[]> {
 		return this.dbm.then(dbm => dbm.list("symbol"))
     }
@@ -181,7 +179,6 @@ export default class WealthController extends BaseController {
 
         return tl
     }
-
     private _refreshModels():Promise<void> {
 			const view = this.getView()
             if(view) {
@@ -251,7 +248,7 @@ export default class WealthController extends BaseController {
 //                        // TODO:errorhandling showg error,  i18n error
 //                    })
             } else {
-                return new Promise((_,reject) => {
+                return new Promise((_,reject) => { 
                     reject("somtething wnt wrong. view is not bound. try again later.")
                 })
 //                console.error("somtething wnt wrong. view is not bound. try again later.")
@@ -259,7 +256,6 @@ export default class WealthController extends BaseController {
                 // TODO:errorhandling showg error,  i18n error
             }
     }
-
     private _onRouteMatched(_oEvent:Route$PatternMatchedEvent):void {
         this._refreshModels()
         .catch(reason=> {
@@ -267,61 +263,6 @@ export default class WealthController extends BaseController {
             // TODO:errorhandling showg error,  i18n error
         })
 
-    }
-
-
-//    // TODO Filter does not work seemingly
-//    public onFilter(e:Input$SubmitEvent) {
-//        console.log("onFitler", e)
-//        const aFilter = [];
-//        // there is something wrong with the type defition of getParameter<never>)
-//        const queryParam = (e.getParameters() as QueryParam).query
-//        console.log("onFitler", queryParam)
-//        if (queryParam) {
-//            aFilter.push(new Filter("Symbol", FilterOperator.Contains, queryParam));
-//        }
-//
-//        // filter binding
-//        const oList = this.getView()?.byId("transactionList")
-//        // there is something strange with the Binding type, it has no filter method but all documentation an example use it
-//        // so i have to force js duck typing to go ahead, maybe there is a better solution // TODO
-//        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
-//        const oBinding = oList?.getBinding("items") as any
-//        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-//        oBinding?.filter(aFilter)
-//    }
-
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    public onPress(e:ListBase$ItemPressEvent) {
-        console.log("Wealth.controller.onPress")
-        const provider = e.getSource()
-        const bindingContext = provider.getBindingContext(WealthController.MODEL_NAME)
-        //const path = bindingContext?.getPath()
-        //const transactionPath =  path?.substring(1) // get rid of trailing slash
-        const yFinData = bindingContext?.getObject("aggregations") as YFinQuoteResult
-        const symbol = yFinData.symbol
-        const ownerComponent = this.getOwnerComponent() as AppComponent
-        const router = ownerComponent.getRouter()
-        if(router && symbol) {
-            router.navTo("transactionBuy", {symbol:symbol})
-        } else {
-            throw new Error("something wrong happened. try again later")
-        }
-//			const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
-//			oRouter.navTo("detail");
-    }
-    public handleRefresh(e:PullToRefresh$RefreshEvent) {
-        this._refreshModels()
-        .then(() => {
-            e.getSource().hide()
-            //(this.byId("pullToRefresh") as PullToRefresh).hide()
-        })
-        .catch((reason) => {
-            console.error(reason)
-            // TODO alert the user
-            e.getSource().hide()
-            //this.byId("pullToRefresh").hide()
-        })
     }
 
     public getCurrentValueFormatted(price:number, stock:number, currency?:string) {
@@ -417,6 +358,62 @@ export default class WealthController extends BaseController {
             })
         }
     }
+
+
+//    // TODO Filter does not work seemingly
+//    public onFilter(e:Input$SubmitEvent) {
+//        console.log("onFitler", e)
+//        const aFilter = [];
+//        // there is something wrong with the type defition of getParameter<never>)
+//        const queryParam = (e.getParameters() as QueryParam).query
+//        console.log("onFitler", queryParam)
+//        if (queryParam) {
+//            aFilter.push(new Filter("Symbol", FilterOperator.Contains, queryParam));
+//        }
+//
+//        // filter binding
+//        const oList = this.getView()?.byId("transactionList")
+//        // there is something strange with the Binding type, it has no filter method but all documentation an example use it
+//        // so i have to force js duck typing to go ahead, maybe there is a better solution // TODO
+//        // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-assignment
+//        const oBinding = oList?.getBinding("items") as any
+//        // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+//        oBinding?.filter(aFilter)
+//    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    public onPress(e:ListBase$ItemPressEvent) {
+        console.log("Wealth.controller.onPress")
+        const provider = e.getSource()
+        const bindingContext = provider.getBindingContext(WealthController.MODEL_NAME)
+        //const path = bindingContext?.getPath()
+        //const transactionPath =  path?.substring(1) // get rid of trailing slash
+        const yFinData = bindingContext?.getObject("aggregations") as YFinQuoteResult
+        const symbol = yFinData.symbol
+        const ownerComponent = this.getOwnerComponent() as AppComponent
+        const router = ownerComponent.getRouter()
+        if(router && symbol) {
+            router.navTo("transactionBuy", {symbol:symbol})
+        } else {
+            throw new Error("something wrong happened. try again later")
+        }
+//			const oRouter = sap.ui.core.UIComponent.getRouterFor(this);
+//			oRouter.navTo("detail");
+    }
+    public handleRefresh(e:PullToRefresh$RefreshEvent) {
+        this._refreshModels()
+        .then(() => {
+            e.getSource().hide()
+            //(this.byId("pullToRefresh") as PullToRefresh).hide()
+        })
+        .catch((reason) => {
+            console.error(reason)
+            // TODO alert the user
+            e.getSource().hide()
+            //this.byId("pullToRefresh").hide()
+        })
+    }
+
     public onPressCards(e:Button$PressEvent) {
         this.loadFragment({
             name: "rsh.watchlist.ui5.view.WealthCards",

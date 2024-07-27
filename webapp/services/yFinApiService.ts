@@ -87,7 +87,12 @@ export function fetchYFinQuery(apiKey:string, {query}:QueryParam, abortControlle
                 }
             }, [[],[]] as [string[][], string[]])
             if(rest.length > 0) {
-                batches.push(rest)
+              batches.push(rest)
+            } else {
+              // fallback, if the autocmplete api returns nothing, treat the query as a symbol, maybe 
+              // the following call to quote api will return somethiong meeningfull
+              // this e.g. the case for BTC-USD 
+              batches.push([query])
             }
             console.log("[- batches --")
             console.log(JSON.stringify(batches))

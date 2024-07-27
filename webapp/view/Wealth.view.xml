@@ -24,9 +24,7 @@
 	>
 		<headerContent>
 			<OverflowToolbar width="100%" asyncMode="true">
-			<!--
-				<MessageStrip text="Left and Right aligned content." class="sapUiTinyMargin"/>
-			-->
+			<!-- <MessageStrip text="Left and Right aligned content." class="sapUiTinyMargin"/> -->
 				<ToolbarSpacer />
 				<SearchField width="12rem" placeholder="{i18n>notYetImplemented}"/>
 				<ToolbarSpacer width="1rem" />
