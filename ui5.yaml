@@ -1,6 +1,10 @@
 specVersion: "3.0"
 metadata:
   name: rsh.watchlist.ui5
+  copyright: |-
+   Wealth Watchlist
+    * (c) Copyright 2009-${currentYear} Roland Stellmach
+    * Licensed under the XYZ License, Version n - see LICENSE.txt.
 type: application
 framework:
   name: OpenUI5

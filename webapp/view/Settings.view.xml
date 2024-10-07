@@ -118,7 +118,8 @@
   </content>
   <footer>
     <OverflowToolbar>
-      <ToolbarSpacer/>
+        <Label text="Version Timestamp = 1728322389."/>
+        <ToolbarSpacer />
         <OverflowToolbarButton visible="{= ${viewState>/mode} === 'Display'}" icon="sap-icon://edit" text="{i18n>/edit}" press="onEdit"/>
         <OverflowToolbarButton visible="{= ${viewState>/mode} === 'Edit'}" icon="sap-icon://save" text="{i18n>save}" press="onSave"/>
         <OverflowToolbarButton visible="{= ${viewState>/mode} === 'Edit'}" icon="sap-icon://cancel" text="{i18n>Abort}" press="onCancel" />

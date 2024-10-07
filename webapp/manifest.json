@@ -186,9 +186,6 @@
                 },
                 "transactionBuy": {
                     "viewName": "TransactionBuy"
-                },
-                "transactionSell": {
-                    "viewName": "TransactionSell"
                 }
             }
         },

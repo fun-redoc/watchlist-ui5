@@ -64,10 +64,14 @@
 		<content>
 			<PullToRefresh
 				id="pullToRefresh"
-				visible="{component>/deviceIsNotTouch}"
+				visible="true"
 				refresh=".handleRefresh" />
 			<core:Fragment id="wealthCardsFragment" type="XML"  
 						   fragmentName="rsh.watchlist.ui5.view.WealthCards" />
 		</content>
 	</Page>
+	<!--
+
+				visible="{= ${component>/deviceIsNotTouch} || ${component/deviceIsTouch}}"
+				-->
 </mvc:View>

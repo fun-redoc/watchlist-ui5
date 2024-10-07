@@ -43,6 +43,10 @@
 			>
 				<attributes>
 					<ObjectAttribute 
+						title="{i18n>yieldPercent}"
+						text="{parts: [{path: 'wealth>'}], formatter:'.getYieldPercent'}"
+					/>
+					<ObjectAttribute 
 						title="{i18n>averageBuyPrice}"
 						text="{parts: [{path: 'wealth>aggregations/'}], formatter:'.getAverageBuyPrice'}"
 					/>
@@ -62,11 +66,6 @@
 					<ObjectAttribute text="{i18n>totalBuyFee} {parts:[{path: 'wealth>aggregations/totalBuyFee'},{path:'wealth>aggregations/currency'}], formatter:'.formatter.formatAsCurrency'}" />
 					<ObjectAttribute text="{i18n>totalSellFee} {wealth>aggregations/totalSellFee}" />
 					<ObjectAttribute text="{i18n>totalYealdOnSold} {wealth>aggregations/totalYealdOnSold}" />
-					<ObjectAttribute
-						title="Link "
-						text="www.sap.com"
-						active="true"
-						press="handleLinkObjectAttributePress" />
 				</attributes>
 			</ObjectHeader>
 		</f:GridListItem>

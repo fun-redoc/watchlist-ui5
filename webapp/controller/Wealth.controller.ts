@@ -275,6 +275,17 @@ export default class WealthController extends BaseController {
             return '-'
         }
     }
+    public async getYieldPercent(ctx:WealthAsset) : Promise<string> {
+        return this.getCurrentYield(ctx)
+                .then(y=> {
+                    if(!y || ctx.aggregations.totalCostValue === 0) {
+                        return "-"
+                    } else {
+                        const strY =  this.formatter.formatPercentFromDecimal( y/ ctx.aggregations.totalCostValue)
+                        return strY
+                    }
+                })
+    }
     public async getCurrentYield(ctx:WealthAsset) : Promise<number|undefined> {
         return this.appComponent.getYFinPool().then(result => {
             const yfp = result[ctx.aggregations.symbol]

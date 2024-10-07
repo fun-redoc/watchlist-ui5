@@ -1,4 +1,5 @@
 ### TODO - Feat
++ add licenze notice to ui5.yml and a LICENZE.txt file
 + WatchDetail View, show the time the data was fetched the last time
 + WatchDetail View, Option to refresh market data periodically
 + AssetDetail: make Chartparams customizable via menu
