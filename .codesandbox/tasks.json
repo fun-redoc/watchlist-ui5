@@ -1,0 +1,69 @@
+{
+  // These tasks will run in order when initializing your CodeSandbox project.
+  "setupTasks": [
+    {
+      "name": "Install Dependencies",
+      "command": "npm install"
+    }
+  ],
+
+  // These tasks can be run from CodeSandbox. Running one will open a log in the app.
+  "tasks": {
+    "clean": {
+      "name": "clean",
+      "command": "npm run clean"
+    },
+    "build": {
+      "name": "build",
+      "command": "npm run build"
+    },
+    "build:opt": {
+      "name": "build:opt",
+      "command": "npm run build:opt"
+    },
+    "start": {
+      "name": "start",
+      "command": "npm run start-cdn",
+      "runAtStart": true,
+      "preview": {
+        "port": 8080
+      }
+    },
+    "start-cdn": {
+      "name": "start-cdn",
+      "command": "npm run start-cdn"
+    },
+    "start:dist": {
+      "name": "start:dist",
+      "command": "npm run start:dist"
+    },
+    "start:dist-cdn": {
+      "name": "start:dist-cdn",
+      "command": "npm run start:dist-cdn"
+    },
+    "ts-typecheck": {
+      "name": "ts-typecheck",
+      "command": "npm run ts-typecheck"
+    },
+    "lint": {
+      "name": "lint",
+      "command": "npm run lint"
+    },
+    "karma": {
+      "name": "karma",
+      "command": "npm run karma"
+    },
+    "karma-ci": {
+      "name": "karma-ci",
+      "command": "npm run karma-ci"
+    },
+    "karma-ci-cov": {
+      "name": "karma-ci-cov",
+      "command": "npm run karma-ci-cov"
+    },
+    "test": {
+      "name": "test",
+      "command": "npm run test"
+    }
+  }
+}
