@@ -83,8 +83,8 @@
           tooltip="Download your transactions from a local file"
           buttonOnly="true"
           icon="sap-icon://download"
-          uploadComplete="onUploadComplete"
-          change="handleUploadPress"
+          uploadComplete=".onUploadComplete"
+          change=".handleUploadPress"
         />
         <Button text="{i18n>DeleteAllSavedTransactions}" icon="sap-icon://delete" press=".onDeleteAllTransactions"></Button>
         <Button text="{i18n>SaveTransactionsToCsv}" 
