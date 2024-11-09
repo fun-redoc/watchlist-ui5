@@ -1,7 +1,7 @@
 {
 	"__license": "This file has been derived from Unicode Common Locale Data Repository (CLDR) files (http://cldr.unicode.org). See the copyright and permission notice in the Unicode-Data-Files-LICENSE.txt available at the same location as this file or visit http://www.unicode.org/copyright.html",
-	"__version": "44.0.0",
-	"__buildtime": "2024-01-12T14:24:50.280Z",
+	"__version": "43.0.0",
+	"__buildtime": "2023-09-28T11:39:07.908Z",
 	"languages": {
 		"aa": "Afar",
 		"ab": "Abkhazian",
@@ -390,7 +390,7 @@
 		"mgo": "Metaʼ",
 		"mh": "Marshallese",
 		"mi": "Māori",
-		"mic": "Mi'kmaw",
+		"mic": "Mi'kmaq",
 		"min": "Minangkabau",
 		"mk": "Macedonian",
 		"ml": "Malayalam",
@@ -643,7 +643,6 @@
 		"vi": "Vietnamese",
 		"vls": "West Flemish",
 		"vmf": "Main-Franconian",
-		"vmw": "Makhuwa",
 		"vo": "Volapük",
 		"vot": "Votic",
 		"vro": "Võro",
@@ -1052,8 +1051,6 @@
 		"IM": "Isle of Man",
 		"IN": "India",
 		"IO": "British Indian Ocean Territory",
-		"IO-alt-biot": "British Indian Ocean Territory",
-		"IO-alt-chagos": "Chagos Archipelago",
 		"IQ": "Iraq",
 		"IR": "Iran",
 		"IS": "Iceland",
@@ -4860,12 +4857,6 @@
 			"10p-24": {
 				"unitPrefixPattern": "y{0}"
 			},
-			"10p-27": {
-				"unitPrefixPattern": "r{0}"
-			},
-			"10p-30": {
-				"unitPrefixPattern": "q{0}"
-			},
 			"10p1": {
 				"unitPrefixPattern": "da{0}"
 			},
@@ -4896,12 +4887,6 @@
 			"10p24": {
 				"unitPrefixPattern": "Y{0}"
 			},
-			"10p27": {
-				"unitPrefixPattern": "R{0}"
-			},
-			"10p30": {
-				"unitPrefixPattern": "Q{0}"
-			},
 			"1024p1": {
 				"unitPrefixPattern": "Ki{0}"
 			},
@@ -4931,12 +4916,10 @@
 			},
 			"power2": {
 				"compoundUnitPattern1": "{0}²",
-				"compoundUnitPattern1-count-one": "{0}²",
 				"compoundUnitPattern1-count-other": "{0}²"
 			},
 			"power3": {
 				"compoundUnitPattern1": "{0}³",
-				"compoundUnitPattern1-count-one": "{0}³",
 				"compoundUnitPattern1-count-other": "{0}³"
 			},
 			"times": {
@@ -5360,14 +5343,8 @@
 				"unitPattern-count-one": "{0} dpi",
 				"unitPattern-count-other": "{0} dpi"
 			},
-			"graphics-dot": {
-				"displayName": "dots",
-				"unitPattern-count-one": "{0} dot",
-				"unitPattern-count-other": "{0} dots"
-			},
 			"length-earth-radius": {
-				"displayName": "earth radius",
-				"unitPattern-count-one": "{0} R⊕",
+				"displayName": "R⊕",
 				"unitPattern-count-other": "{0} R⊕"
 			},
 			"length-kilometer": {
@@ -5486,13 +5463,11 @@
 				"unitPattern-count-other": "{0} lx"
 			},
 			"light-candela": {
-				"displayName": "candela",
-				"unitPattern-count-one": "{0} cd",
+				"displayName": "cd",
 				"unitPattern-count-other": "{0} cd"
 			},
 			"light-lumen": {
-				"displayName": "lumen",
-				"unitPattern-count-one": "{0} lm",
+				"displayName": "lm",
 				"unitPattern-count-other": "{0} lm"
 			},
 			"light-solar-luminosity": {
@@ -5575,9 +5550,8 @@
 				"unitPattern-count-other": "{0} M☉"
 			},
 			"mass-grain": {
-				"displayName": "grains",
-				"unitPattern-count-one": "{0} gr",
-				"unitPattern-count-other": "{0} gr"
+				"displayName": "grain",
+				"unitPattern-count-other": "{0} grain"
 			},
 			"power-gigawatt": {
 				"displayName": "GW",
@@ -5685,8 +5659,7 @@
 				"unitPattern-count-other": "B {0}"
 			},
 			"temperature-generic": {
-				"displayName": "deg. temp.",
-				"unitPattern-count-one": "{0}°",
+				"displayName": "°",
 				"unitPattern-count-other": "{0}°"
 			},
 			"temperature-celsius": {
@@ -5812,7 +5785,7 @@
 				"displayName": "Imp. gal",
 				"unitPattern-count-one": "{0} gal Imp.",
 				"unitPattern-count-other": "{0} gal Imp.",
-				"perUnitPattern": "{0}/galImp"
+				"perUnitPattern": "{0}/gal Imp."
 			},
 			"volume-quart": {
 				"displayName": "qts",
@@ -5855,44 +5828,32 @@
 				"unitPattern-count-other": "{0} bbl"
 			},
 			"volume-dessert-spoon": {
-				"displayName": "dessert spoons",
-				"unitPattern-count-one": "{0} dsp",
-				"unitPattern-count-other": "{0} dsp"
+				"displayName": "dstspn",
+				"unitPattern-count-other": "{0} dstspn"
 			},
 			"volume-dessert-spoon-imperial": {
-				"displayName": "Imp. dessert spoons",
-				"unitPattern-count-one": "{0} dsp-Imp.",
-				"unitPattern-count-other": "{0} dsp-Imp."
+				"displayName": "dstspn Imp",
+				"unitPattern-count-other": "{0} dstspn Imp"
 			},
 			"volume-drop": {
-				"displayName": "drops",
-				"unitPattern-count-one": "{0} dr",
-				"unitPattern-count-other": "{0} drdrops"
+				"displayName": "drop",
+				"unitPattern-count-other": "{0} drop"
 			},
 			"volume-dram": {
-				"displayName": "drams",
-				"unitPattern-count-one": "{0} dram",
-				"unitPattern-count-other": "{0} drams"
+				"displayName": "dram fluid",
+				"unitPattern-count-other": "{0} dram fl"
 			},
 			"volume-jigger": {
-				"displayName": "jiggers",
-				"unitPattern-count-one": "{0} jigger",
-				"unitPattern-count-other": "{0} jiggers"
+				"displayName": "jigger",
+				"unitPattern-count-other": "{0} jigger"
 			},
 			"volume-pinch": {
-				"displayName": "pinches",
-				"unitPattern-count-one": "{0} pn",
-				"unitPattern-count-other": "{0} pn"
+				"displayName": "pinch",
+				"unitPattern-count-other": "{0} pinch"
 			},
 			"volume-quart-imperial": {
-				"displayName": "Imp. quarts",
-				"unitPattern-count-one": "{0} qt-Imp.",
-				"unitPattern-count-other": "{0} qt-Imp."
-			},
-			"pressure-gasoline-energy-density": {
-				"displayName": "gas-equiv",
-				"unitPattern-count-one": "{0} gas-equiv",
-				"unitPattern-count-other": "{0} gas-equiv"
+				"displayName": "qt Imp",
+				"unitPattern-count-other": "{0} qt Imp."
 			},
 			"coordinateUnit": {
 				"displayName": "direction",
@@ -5904,9 +5865,9 @@
 		}
 	},
 	"lenient-scope-number": {
-		"minusSign": "-－﹣ ‐‑‒–−⁻₋➖",
-		"commaSign": ",，﹐︐ ⹁،٫、﹑､︑",
-		"plusSign": "+＋﬩﹢⁺₊ ➕"
+		"minusSign": "-‐‒–⁻₋−➖﹣－",
+		"commaSign": ",،٫⹁、︐︑﹐﹑，､",
+		"plusSign": "+⁺₊➕﬩﹢＋"
 	},
 	"currencyFormat-sap-short": {
 		"1000-one": "0K ¤",

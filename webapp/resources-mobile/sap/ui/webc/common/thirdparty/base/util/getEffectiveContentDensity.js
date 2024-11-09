@@ -1,2 +1,0 @@
-sap.ui.define(["exports"],function(e){"use strict";Object.defineProperty(e,"__esModule",{value:true});e.default=void 0;const t="--_ui5_content_density";const u=e=>getComputedStyle(e).getPropertyValue(t);var o=u;e.default=o});
-//# sourceMappingURL=getEffectiveContentDensity.js.map

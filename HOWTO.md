@@ -22,10 +22,20 @@ Steps:
 in terminal
 ```
 sed -i -r "s/(.*)(Version Timestamp = )(.*)\./\1\2$(date +%s)./" ./webapp/view/Settings.view.xml
+```
+```
 npm run build:opt
+```
+```
 ./cleanup-dist.sh 
+```
+```
 git add .
+```
+```
 git commit -m "some improvements"
+```
+```
 git push
 ```
 

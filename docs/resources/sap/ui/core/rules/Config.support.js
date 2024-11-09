@@ -64,7 +64,7 @@ sap.ui.define([
 			return;
 		}
 		// Check for FLP scenario
-		var oUshellLib = Library.all()["sap.ushell"];
+		var oUshellLib = sap.ui.getCore().getLoadedLibraries()["sap.ushell"];
 		if (oUshellLib) {
 			return;
 		}
@@ -126,7 +126,7 @@ sap.ui.define([
 			var sUI5ICFNode = "/sap/bc/ui5_ui5/";
 			var aAppNames = [];
 			var sAppName;
-			var aRequests = performance.getEntriesByType("resource");
+			var aRequests = window.performance.getEntriesByType("resource");
 			for (var i = 0; i < aRequests.length; i++) {
 				var sUrl = aRequests[i].name;
 				//We limit the check to requests under ICF node "/sap/bc/ui5_ui5/", only these are relevant here
@@ -174,7 +174,7 @@ sap.ui.define([
 		check: function(oIssueManager, oCoreFacade, oScope) {
 			if (oScope.getType() === "global") {
 				//1. Ignore libraries with instantiated elements
-				var mLibraries = Library.all();
+				var mLibraries = sap.ui.getCore().getLoadedLibraries();
 				oScope.getElements().forEach(function(oElement) {
 					var sElementLib = oElement.getMetadata().getLibraryName();
 					if (mLibraries[sElementLib]) {

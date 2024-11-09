@@ -1,2 +1,0 @@
-sap.ui.define(["exports"],function(e){"use strict";Object.defineProperty(e,"__esModule",{value:true});e.default=void 0;var o;(function(e){e["Solid"]="Solid";e["None"]="None"})(o||(o={}));var t=o;e.default=t});
-//# sourceMappingURL=BorderDesign.js.map

@@ -1,2 +1,0 @@
-sap.ui.define(["exports"],function(e){"use strict";Object.defineProperty(e,"__esModule",{value:true});e.default=void 0;const t=e=>e.replace(/[.*+?^${}()|[\]\\]/g,"\\$&");var u=t;e.default=u});
-//# sourceMappingURL=escapeRegex.js.map

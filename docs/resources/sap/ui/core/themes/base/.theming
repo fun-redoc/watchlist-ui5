@@ -1,7 +1,5 @@
 {
   "sEntity" : "Theme",
   "sId" : "base",
-  "sVendor" : "SAP",
-  "sType": "ABSTRACT",
-  "sThemability": "PRIVATE"
+  "sVendor" : "SAP"
 }
