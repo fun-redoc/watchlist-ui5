@@ -27,6 +27,7 @@ rm -rf "$WWW_FOLDER"/resources/sap/ui/test
 rm -rf "$WWW_FOLDER"/resources/sap/ui/qunit
 rm -rf "$WWW_FOLDER"/resources/sap/ui/model/odata
 find "$WWW_FOLDER" -name '*dbg*' -exec rm -f {} \;
+find "$WWW_FOLDER" -name '*.map' -exec rm -f {} \;
 find "$WWW_FOLDER" -name '*.ts' -exec rm -f {} \;
 find "$WWW_FOLDER" -name '*debug.js.*' -exec rm -f {} \;
 find "$WWW_FOLDER" -name '*copy*' -exec rm -f {} \;
