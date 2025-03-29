@@ -5,6 +5,8 @@
 + AssetDetail: make Chartparams customizable via menu
 
 ### TODO - Debt
++ !! Transacton input Value 0.02635014 turns to 0, fix it
++ the Detail screens are not ready
 + Settings View: the FileUploader Component fires the change event only once consequence loading of multiple transaction files not possible without reloading the page which is not appropriate for app, this is bad.
 + Using as App, Buy Button does not fire
 + use UI5 export binding feature: https://help.sap.com/docs/SAP_NETWEAVER_740/468a97775123488ab3345a0c48cadd8f/f1ee7a8b2102415bb0d34268046cd3ea.html
